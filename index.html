@@ -27,10 +27,12 @@ body{font-family:Arial,sans-serif;direction:rtl;background:var(--bg);color:var(-
 @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 input,textarea,select{font-family:Arial,sans-serif}
+#root{min-height:100vh}
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f172a"><div style="font-size:52px">🔧</div><div style="font-size:17px;color:#94a3b8">טוען...</div><div style="width:40px;height:40px;border:4px solid #334155;border-top:4px solid #1565c0;border-radius:50%;animation:spin .9s linear infinite"></div></div></div>
+
 <script>
 firebase.initializeApp({
   apiKey:"AIzaSyA5SsSCkhQg1R5bi5FitJeB9uzrNm-1L8o",
@@ -40,16 +42,30 @@ firebase.initializeApp({
   messagingSenderId:"622794251696",
   appId:"1:622794251696:web:aafcaf67b729d653de4a75"
 });
-window._db=firebase.firestore();
+window._db = firebase.firestore();
+window._deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); window._deferredPrompt = e; });
 
-// PWA Install prompt
-window._deferredPrompt=null;
-window.addEventListener(‘beforeinstallprompt’,e=>{e.preventDefault();window._deferredPrompt=e;});
+async function loadAndRun() {
+  try {
+    const [compText, appText] = await Promise.all([
+      fetch('components.js').then(r => { if(!r.ok) throw new Error('components.js לא נמצא (status ' + r.status + ')'); return r.text(); }),
+      fetch('app.js').then(r => { if(!r.ok) throw new Error('app.js לא נמצא (status ' + r.status + ')'); return r.text(); })
+    ]);
+    const run = code => { const s = document.createElement('script'); s.textContent = Babel.transform(code, {presets:['react']}).code; document.body.appendChild(s); };
+    run(compText);
+    run(appText);
+  } catch(e) {
+    document.getElementById('root').innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px;background:#0f172a;color:#f87171;font-family:Arial;text-align:center;padding:20px">' +
+      '<div style="font-size:40px">⚠️</div><div style="font-size:16px;font-weight:bold">שגיאה בטעינה</div>' +
+      '<div style="font-size:13px;color:#fca5a5;max-width:400px;word-break:break-all">' + e.message + '</div>' +
+      '<div style="font-size:11px;color:#64748b;margin-top:8px">ודא שכל הקבצים הועלו לאותה תיקייה ב-GitHub</div></div>';
+    console.error(e);
+  }
+}
+loadAndRun();
 </script>
-
-<script src="components.js" type="text/babel" data-presets="react"></script>
-
-<script src="app.js" type="text/babel" data-presets="react"></script>
 
 </body>
 </html>
