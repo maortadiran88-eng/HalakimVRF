@@ -19,7 +19,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;direction:rtl;background:var(--bg);color:var(--text);transition:background .25s,color .25s}
+body{font-family:Arial,sans-serif;direction:rtl;background:var(--bg);color:var(--text)}
 :root{--bg:#f0f2f5;--card:#fff;--text:#1a1a2a;--sub:#6b7280;--border:#e5e7eb;--inp:#111;--row1:#fff;--row2:#f9fafb;--hi:#fff9c4;--sel:#e8f5e9;--sidebar:#fff;--ibg:#fff;--shadow:rgba(0,0,0,.08)}
 .dark{--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--sub:#94a3b8;--border:#334155;--inp:#f1f5f9;--row1:#1e293b;--row2:#0f172a;--hi:#3d3510;--sel:#14532d;--sidebar:#1e293b;--ibg:#334155;--shadow:rgba(0,0,0,.4)}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
@@ -31,7 +31,13 @@ input,textarea,select{font-family:Arial,sans-serif}
 </style>
 </head>
 <body>
-<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f172a"><div style="font-size:52px">🔧</div><div style="font-size:17px;color:#94a3b8">טוען...</div><div style="width:40px;height:40px;border:4px solid #334155;border-top:4px solid #1565c0;border-radius:50%;animation:spin .9s linear infinite"></div></div></div>
+<div id="root">
+  <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;background:#0f172a">
+    <div style="font-size:52px">🔧</div>
+    <div style="font-size:17px;color:#94a3b8">טוען...</div>
+    <div style="width:40px;height:40px;border:4px solid #334155;border-top:4px solid #1565c0;border-radius:50%;animation:spin .9s linear infinite"></div>
+  </div>
+</div>
 
 <script>
 firebase.initializeApp({
@@ -46,25 +52,35 @@ window._db = firebase.firestore();
 window._deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); window._deferredPrompt = e; });
 
-async function loadAndRun() {
-  try {
-    const [compText, appText] = await Promise.all([
-      fetch('components.js').then(r => { if(!r.ok) throw new Error('components.js לא נמצא (status ' + r.status + ')'); return r.text(); }),
-      fetch('app.js').then(r => { if(!r.ok) throw new Error('app.js לא נמצא (status ' + r.status + ')'); return r.text(); })
-    ]);
-    const run = code => { const s = document.createElement('script'); s.textContent = Babel.transform(code, {presets:['react']}).code; document.body.appendChild(s); };
-    run(compText);
-    run(appText);
-  } catch(e) {
-    document.getElementById('root').innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px;background:#0f172a;color:#f87171;font-family:Arial;text-align:center;padding:20px">' +
-      '<div style="font-size:40px">⚠️</div><div style="font-size:16px;font-weight:bold">שגיאה בטעינה</div>' +
-      '<div style="font-size:13px;color:#fca5a5;max-width:400px;word-break:break-all">' + e.message + '</div>' +
-      '<div style="font-size:11px;color:#64748b;margin-top:8px">ודא שכל הקבצים הועלו לאותה תיקייה ב-GitHub</div></div>';
-    console.error(e);
-  }
+function showError(msg) {
+  document.getElementById('root').innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:12px;background:#0f172a;color:#f87171;font-family:Arial;text-align:center;padding:20px">' +
+    '<div style="font-size:40px">⚠️</div>' +
+    '<div style="font-size:16px;font-weight:bold">שגיאה בטעינה</div>' +
+    '<div style="font-size:12px;color:#fca5a5;max-width:420px;word-break:break-all;direction:ltr">' + msg + '</div>' +
+    '<div style="font-size:11px;color:#64748b;margin-top:8px">פתח Console (F12) לפרטים נוספים</div></div>';
 }
-loadAndRun();
+
+fetch('catalog.js')
+  .then(r => {
+    if (!r.ok) throw new Error('catalog.js לא נמצא — status ' + r.status);
+    return r.text();
+  })
+  .then(code => {
+    try {
+      const compiled = Babel.transform(code, { presets: ['react'] }).code;
+      const s = document.createElement('script');
+      s.textContent = compiled;
+      document.body.appendChild(s);
+    } catch(e) {
+      showError('Babel error: ' + e.message);
+      console.error(e);
+    }
+  })
+  .catch(e => {
+    showError(e.message);
+    console.error(e);
+  });
 </script>
 
 </body>
