@@ -291,12 +291,12 @@ function App(){
       </div>
     </div>)}
 
-    {/* MODALS */}
-    {showCart&&<CartPanel cart={cart} data={data} onRemove={removeFromCart} onClear={clearCart} onClose={()=>setShowCart(false)} waDefaults={data.waDefaults||['nameHe','tadPn']}/>}
-    {showNotif&&<NotificationsPanel missingAlerts={missingAlerts} reports={reports} onNav={(bid,cid,mid)=>{nav(bid,cid,mid);setShowNotif(false);}} onResolve={async(id)=>{await fbResolveReport(id);fbGetReports().then(setReports);}} onClose={()=>setShowNotif(false)}/>}
-    {showHistory&&<Modal onClose={()=>setShowHistory(false)} title="📋 לוג שינויים" wide>
+{/* MODALS */}
+    {showCart && <CartPanel cart={cart} data={data} onRemove={removeFromCart} onClear={clearCart} onClose={()=>setShowCart(false)} waDefaults={data.waDefaults||['nameHe','tadPn']}/>}
+    {showNotif && <NotificationsPanel missingAlerts={missingAlerts} reports={reports} onNav={(bid,cid,mid)=>{nav(bid,cid,mid);setShowNotif(false);}} onResolve={async(id)=>{await fbResolveReport(id);fbGetReports().then(setReports);}} onClose={()=>setShowNotif(false)}/>}
+    {showHistory && <Modal onClose={()=>setShowHistory(false)} title="📋 לוג שינויים" wide>
       <div style={{maxHeight:'60vh',overflowY:'auto'}}>
-        {!histData.length&&<div style={{textAlign:'center',color:'var(--sub)',padding:30}}>אין רשומות</div>}
+        {!histData.length && <div style={{textAlign:'center',color:'var(--sub)',padding:30}}>אין רשומות</div>}
         {histData.map((h,i)=>(
           <div key={h.id||i} style={{display:'flex',gap:10,padding:'9px 0',borderBottom:'1px solid var(--border)',alignItems:'flex-start'}}>
             <div style={{flex:1}}><div style={{fontWeight:'bold',fontSize:13,color:'var(--text)'}}>{h.action}</div>
@@ -308,16 +308,13 @@ function App(){
       </div>
       <button onClick={()=>setShowHistory(false)} style={{width:'100%',marginTop:14,...BST}}>סגור</button>
     </Modal>}
-    {chPwd&&<ChangePwd data={data} onSave={d=>{mut(()=>({...d}));setChPwd(false);alert('✅ נשמר');}} onClose={()=>setChPwd(false)}/>}
-    {brandMgr&&<BrandMgr data={data} onSave={brands=>{mut(d=>({...d,brands}));setBrandMgr(false);}} onClose={()=>setBrandMgr(false)}/>}
-    {showXls&&<XlsImportModal data={data} onImport={importFromXls} onClose={()=>setShowXls(false)}/>}
-    {showBulkMove&&<BulkMoveModal data={data} onMove={bulkMoveModels} onClose={()=>setShowBulkMove(false)}/>}
-    {showBulkDel&&<BulkDeleteModal data={data} onDelete={bulkDeleteModels} onClose={()=>setShowBulkDel(false)}/>}
-  </div>);
-}
-{showXls && <XlsImportModal data={data} onImport={d => mut(prev => ({ ...prev, ...d }))} onClose={() => setShowXls(false)} />}
+    {chPwd && <ChangePwd data={data} onSave={d=>{mut(()=>({...d}));setChPwd(false);alert('✅ נשמר');}} onClose={()=>setChPwd(false)}/>}
+    {brandMgr && <BrandMgr data={data} onSave={brands=>{mut(d=>({...d,brands}));setBrandMgr(false);}} onClose={()=>setBrandMgr(false)}/>}
+    {showXls && <XlsImportModal data={data} onImport={importFromXls} onClose={()=>setShowXls(false)}/>}
+    {showBulkMove && <BulkMoveModal data={data} onMove={bulkMoveModels} onClose={()=>setShowBulkMove(false)}/>}
+    {showBulkDel && <BulkDeleteModal data={data} onDelete={bulkDeleteModels} onClose={()=>setShowBulkDel(false)}/>}
   </div>);
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
