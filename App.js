@@ -315,10 +315,9 @@ function App(){
     {showBulkDel&&<BulkDeleteModal data={data} onDelete={bulkDeleteModels} onClose={()=>setShowBulkDel(false)}/>}
   </div>);
 }
-
-// ... סוף פונקציית App
+{showXls && <XlsImportModal data={data} onImport={d => mut(prev => ({ ...prev, ...d }))} onClose={() => setShowXls(false)} />}
   </div>);
 }
 
-// הפקודה שמריצה את האפליקציה - וודא שאין אחריה עוד }
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
