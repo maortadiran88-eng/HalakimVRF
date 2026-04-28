@@ -316,5 +316,9 @@ function App(){
   </div>);
 }
 
-// הפקודה שמריצה את האפליקציה בתוך קובץ ה-HTML
+// ... סוף פונקציית App
+  </div>);
+}
+
+// הפקודה שמריצה את האפליקציה - וודא שאין אחריה עוד }
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
