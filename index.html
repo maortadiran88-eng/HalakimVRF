@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>קטלוג חלקי חילוף</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;direction:rtl;background:var(--bg);color:var(--text);transition:background .25s,color .25s}
+:root{--bg:#f0f2f5;--card:#fff;--text:#1a1a2a;--sub:#6b7280;--border:#e5e7eb;--inp:#111;--row1:#fff;--row2:#f9fafb;--hi:#fff9c4;--sel:#e8f5e9;--sidebar:#fff;--ibg:#fff;--shadow:rgba(0,0,0,.08)}
+.dark{--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--sub:#94a3b8;--border:#334155;--inp:#f1f5f9;--row1:#1e293b;--row2:#0f172a;--hi:#3d3510;--sel:#14532d;--sidebar:#1e293b;--ibg:#334155;--shadow:rgba(0,0,0,.4)}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes tipFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+input,textarea,select{font-family:Arial,sans-serif}
+.discontinued-row td{position:relative}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  firebase.initializeApp({
+    apiKey:"AIzaSyA5SsSCkhQg1R5bi5FitJeB9uzrNm-1L8o",
+    authDomain:"helkey-hiluf.firebaseapp.com",
+    projectId:"helkey-hiluf",
+    storageBucket:"helkey-hiluf.firebasestorage.app",
+    messagingSenderId:"622794251696",
+    appId:"1:622794251696:web:aafcaf67b729d653de4a75"
+  });
+  window._db = firebase.firestore();
+</script>
+<script type="text/babel" src="js/constants.js"></script>
+<script type="text/babel" src="js/firebase.js"></script>
+<script type="text/babel" src="js/helpers.js"></script>
+<script type="text/babel" src="js/components.js"></script>
+<script type="text/babel" src="js/modals.js"></script>
+<script type="text/babel" src="js/ModelView.js"></script>
+<script type="text/babel" src="js/App.js"></script>
+</body>
+</html>
