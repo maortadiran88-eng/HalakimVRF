@@ -137,7 +137,7 @@ function HelpModal({role,onClose}){
     {icon:'📰',title:'חדשות',text:'לחץ 📰 לעריכת שורת החדשות הרצה בראש האתר.'},
   ];
   return(
-    <Modal onClose={onClose} wide title={`❓ מדריך שימוש${isViewer?' — צופה':isEditor?' — עורך':' — מנהל'}`}>
+    <Modal onClose={onClose} wide title="❓ מדריך שימוש">
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:16}}>
         {sections.map((s,i)=>(
           <div key={i} style={{background:'var(--row2)',borderRadius:10,padding:'12px 14px',borderRight:'3px solid #1565c0'}}>

@@ -386,35 +386,22 @@ function DashboardModal({data,onClose}){
 
 // ══════════ CHANGE PWD / SETTINGS ══════════
 function ChangePwd({data,onSave,onClose}){
-  const[cur,setCur]=useState('');const[an,setAn]=useState('');const[en,setEn]=useState('');const[vn,setVn]=useState('');const[err,setErr]=useState('');
-  const[wt,setWt]=useState(data.welcomeTitle||'');const[ws,setWs]=useState(data.welcomeSub||'');
-  const[wd,setWd]=useState(data.waDefaults||['nameHe','tadPn']);
-  const[disc,setDisc]=useState(data.disclaimer||'');
-  const[tips,setTips]=useState(data.tips||DEFAULT_TIPS);
-  const[greetings,setGreetings]=useState(data.greetings||{morning:'🌅 בוקר טוב!',noon:'☀️ צהריים טובים!',evening:'🌆 ערב טוב!',night:'🌙 לילה טוב!'});
+  const[wt,   setWt]   = useState(data.welcomeTitle||'');
+  const[ws,   setWs]   = useState(data.welcomeSub||'');
+  const[wd,   setWd]   = useState(data.waDefaults||['nameHe','tadPn']);
+  const[disc, setDisc] = useState(data.disclaimer||'');
+  const[tips, setTips] = useState(data.tips||DEFAULT_TIPS);
+  const[greetings,setGreetings] = useState(data.greetings||{morning:'🌅 בוקר טוב!',noon:'☀️ צהריים טובים!',evening:'🌆 ערב טוב!',night:'🌙 לילה טוב!'});
 
   const submit=()=>{
-    // Validate against admin user in users array, fallback to legacy data.pass
-    const adminUser=(data.users||DEFAULT_USERS).find(u=>u.role==='admin');
-    const adminPass=adminUser?.pass||data.pass||'admin1234';
-    if(cur!==adminPass){setErr('סיסמת מנהל נוכחית שגויה');return;}
-    if(an&&an.length<4){setErr('לפחות 4 תווים');return;}
-    // Update admin pass in users array too
-    const updatedUsers=(data.users||DEFAULT_USERS).map(u=>u.role==='admin'&&u.id===adminUser?.id?{...u,pass:an||adminPass}:u);
-    onSave({...data,users:updatedUsers,pass:an||data.pass,editorPass:en||data.editorPass||'editor1234',viewerPass:vn||data.viewerPass||'tadir123',waDefaults:wd,welcomeTitle:wt,welcomeSub:ws,disclaimer:disc,tips,greetings});
+    onSave({...data,waDefaults:wd,welcomeTitle:wt,welcomeSub:ws,disclaimer:disc,tips,greetings});
   };
   const allCols=data.brands[0]?.categories[0]?.models[0]?.columns||DCOLS();
   return(
     <Modal onClose={onClose} wide title="🔑 הגדרות מנהל">
-      {/* Passwords */}
-      <div style={{fontWeight:'bold',fontSize:14,color:'var(--sub)',marginBottom:12,paddingBottom:8,borderBottom:'1px solid var(--border)'}}>🔐 סיסמאות</div>
-      {[['סיסמת מנהל נוכחית (לאימות)',cur,setCur,''],['סיסמת מנהל חדשה',an,setAn,'ריק = ללא שינוי'],[`סיסמת עורך`,en,setEn,`נוכחית: ${data.editorPass||'editor1234'}`],[`סיסמת צופה`,vn,setVn,`נוכחית: ${data.viewerPass||'tadir123'}`]].map(([l,v,s,hint])=>(
-        <div key={l} style={{marginBottom:10}}>
-          <div style={{fontSize:12,color:'var(--sub)',marginBottom:4}}>{l}{hint&&<span style={{color:'#aaa',marginRight:8,fontSize:11}}>({hint})</span>}</div>
-          <input type="password" value={v} onChange={e=>s(e.target.value)} style={INS}/>
-        </div>
-      ))}
-      {err&&<div style={{color:'red',fontSize:12,marginBottom:8}}>{err}</div>}
+      <div style={{background:'#e3f2fd',borderRadius:8,padding:'10px 14px',marginBottom:16,fontSize:12,color:'#1565c0'}}>
+        💡 לניהול סיסמאות ומשתמשים לחץ על כפתור 👥 בסרגל העליון
+      </div>
 
       {/* WA defaults */}
       <div style={{fontWeight:'bold',fontSize:14,color:'var(--sub)',marginBottom:10,paddingTop:12,paddingBottom:8,borderBottom:'1px solid var(--border)',borderTop:'1px solid var(--border)',marginTop:4}}>📱 ברירת מחדל לווצאפ</div>

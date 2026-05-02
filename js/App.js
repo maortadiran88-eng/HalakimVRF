@@ -32,7 +32,6 @@ function App() {
   const [showNewsEditor, setShowNewsEditor] = useState(false);
   const [showBroadcast,  setShowBroadcast]  = useState(false);
   const [showUsersMgr,   setShowUsersMgr]   = useState(false);
-  const [showEditorAlerts, setShowEditorAlerts] = useState(true);
   const [broadcast,      setBroadcast]      = useState(null);
   const [newsItems,      setNewsItems]      = useState([]);
   const [favorites,      setFavorites]      = useState(() => {
@@ -312,14 +311,6 @@ function App() {
       {/* Broadcast */}
       {broadcast && <BroadcastBanner msg={broadcast} onDismiss={()=>setBroadcast(null)}/>}
 
-      {/* Editor alerts bar (shown after login if there are open tasks) */}
-      {editor && showEditorAlerts && notifCount > 0 && (
-        <EditorAlertsBar
-          missingAlerts={missingAlerts} reports={reports} techRequests={techRequests}
-          onNav={tab=>{openNotif(tab);setShowEditorAlerts(false);}}
-          onClose={()=>setShowEditorAlerts(false)}/>
-      )}
-
       {/* News Ticker */}
       <NewsTicker items={newsItems}/>
 
@@ -355,7 +346,7 @@ function App() {
         )}
 
         <button onClick={toggleDark} style={bB('rgba(255,255,255,.2)')}>{dark?'☀️':'🌙'}</button>
-        <button onClick={()=>{setLoginRole(null);setSel(null);setSidebar(false);setShowEditorAlerts(true);}} style={bB('rgba(255,255,255,.2)')} title="התנתק">⬤ יציאה</button>
+        <button onClick={()=>{setLoginRole(null);setSel(null);setSidebar(false);}} style={bB('rgba(255,255,255,.2)')} title="התנתק">⬤ יציאה</button>
 
         {/* Editor extras */}
         {editor&&!admin&&<button onClick={()=>setShowNewsEditor(true)} style={bB('#00796b')}>📰 חדשות</button>}
@@ -459,12 +450,7 @@ function App() {
                 />
               ))}
             </div>
-            <div style={{padding:'10px',borderTop:'1px solid var(--border)',flexShrink:0}}>
-              <button onClick={()=>{if(confirm('לעבור לאתר הטכנאים?'))window.open('https://maortadiran88-eng.github.io/GREE/','_blank');}}
-                style={{width:'100%',padding:'8px',background:'var(--row2)',border:'1px solid var(--border)',borderRadius:8,cursor:'pointer',fontSize:11,color:'var(--sub)',display:'flex',alignItems:'center',gap:6,justifyContent:'center'}}>
-                🔧 אתר הטכנאים
-              </button>
-            </div>
+
           </div>
         </aside>
 

@@ -27,25 +27,8 @@ function LoginScreen({data,onLogin}){
   );
 }
 
-// ══════════ EDITOR QUICK ALERTS (shown on login) ══════════
-function EditorAlertsBar({missingAlerts,reports,techRequests,onNav,onClose}){
-  const missing=missingAlerts.length;
-  const openReports=reports.filter(r=>!r.resolved).length;
-  const openTech=techRequests.filter(r=>!r.resolved).length;
-  const total=missing+openReports+openTech;
-  if(!total)return null;
-  return(
-    <div style={{background:'#fff8e1',borderBottom:'2px solid #ffe082',padding:'10px 16px',display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
-      <span style={{fontWeight:'bold',fontSize:13,color:'#e65100'}}>📋 משימות ממתינות:</span>
-      {missing>0&&<span style={{background:'#fff3e0',color:'#e65100',borderRadius:6,padding:'3px 10px',fontSize:12,fontWeight:'bold',cursor:'pointer'}} onClick={()=>onNav('missing')}>⚠️ {missing} שדות חסרים</span>}
-      {openReports>0&&<span style={{background:'#ffebee',color:'#c62828',borderRadius:6,padding:'3px 10px',fontSize:12,fontWeight:'bold',cursor:'pointer'}} onClick={()=>onNav('reports')}>🔴 {openReports} דיווחי שגיאה</span>}
-      {openTech>0&&<span style={{background:'#e3f2fd',color:'#1565c0',borderRadius:6,padding:'3px 10px',fontSize:12,fontWeight:'bold',cursor:'pointer'}} onClick={()=>onNav('tech')}>💬 {openTech} בקשות טכנאים</span>}
-      <button onClick={onClose} style={{marginRight:'auto',background:'none',border:'none',color:'#aaa',cursor:'pointer',fontSize:16,flexShrink:0}}>✕</button>
-    </div>
-  );
-}
 
-// ══════════ TODO LIST ══════════
+
 function TodoList({data,reports,techRequests,alerts}){
   const missingTadPn=[];
   data.brands.forEach(b=>b.categories.forEach(c=>c.models.forEach(m=>{
@@ -158,8 +141,6 @@ function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,t
         ))}
       </div>
 
-      {/* Todo — editor/admin */}
-      {(loginRole==='editor'||loginRole==='admin')&&<TodoList data={data} reports={reports||[]} techRequests={techRequests||[]} alerts={alerts||[]}/>}
 
       {/* Favorites */}
       {favModels.length>0&&(
@@ -178,13 +159,8 @@ function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,t
               </div>
             ))}
           </div>
-          {/* Tech site link after favorites */}
-          <div style={{marginTop:10}}><TechSiteLink/></div>
         </div>
       )}
-
-      {/* Tech request */}
-      <TechRequestBox loginRole={loginRole}/>
 
       {/* Recently viewed */}
       {recentModels.length>0&&(
@@ -201,13 +177,14 @@ function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,t
               </div>
             ))}
           </div>
-          {/* Tech site link after recent */}
-          <div style={{marginTop:10}}><TechSiteLink/></div>
         </div>
       )}
 
-      {/* If neither favorites nor recent, show tech link standalone */}
-      {favModels.length===0&&recentModels.length===0&&<TechSiteLink/>}
+      {/* "Missing model?" — always after recent */}
+      <TechRequestBox loginRole={loginRole}/>
+
+      {/* Tech site link — single, always here */}
+      <TechSiteLink/>
 
       {/* Brand list */}
       <div style={{fontWeight:'bold',fontSize:13,color:'var(--sub)',marginBottom:10}}>📁 לפי מותג</div>
