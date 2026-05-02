@@ -1,7 +1,7 @@
 function ModelView({brand,cat,model,editor,admin,viewer,hq,data,favorites,onToggleFav,loginRole,
   onUpdate,onRenameModel,onAddPart,onDelPart,onCell,onColName,onMoveCol,onAddCol,onDelCol,onPaste,
   onImgUpload,onDelImg,onImgUrl,onOpenImg,onMove,onDuplicate,onCopyPartsFrom,
-  onAddToCart,onReport,waDefaults}) {
+  onAddToCart,onReport,waDefaults,partsDisclaimer,onUpdateDisclaimer}) {
 
   const [synIn,       setSynIn]       = useState(model.synonyms?.join(', ')||'');
   const [editSyn,     setEditSyn]     = useState(false);
@@ -253,6 +253,17 @@ function ModelView({brand,cat,model,editor,admin,viewer,hq,data,favorites,onTogg
 
       {/* Parts table */}
       <div style={{background:'var(--card)',borderRadius:12,padding:'14px 16px',boxShadow:'0 1px 4px var(--shadow)'}}>
+
+        {/* Disclaimer */}
+        <div style={{background:'#fff8e1',border:'1px solid #ffe082',borderRadius:8,padding:'10px 14px',marginBottom:12,fontSize:12,color:'#795548',lineHeight:1.6,display:'flex',alignItems:'flex-start',gap:8}}>
+          <span style={{flexShrink:0,fontSize:15}}>⚠️</span>
+          {admin
+            ?<textarea value={partsDisclaimer||DEFAULT_DISCLAIMER} onChange={e=>onUpdateDisclaimer(e.target.value)}
+                style={{flex:1,background:'transparent',border:'none',outline:'none',fontSize:12,color:'#795548',resize:'none',fontFamily:'Arial',lineHeight:1.6,cursor:'text'}} rows={2}/>
+            :<span style={{flex:1}}>{partsDisclaimer||DEFAULT_DISCLAIMER}</span>
+          }
+        </div>
+
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,flexWrap:'wrap'}}>
           <span style={{fontWeight:'bold',fontSize:14,color:'var(--text)'}}>🔩 רשימת חלקים</span>
           <input value={filter} onChange={e=>setFilter(e.target.value)} placeholder="חיפוש חכם..."
@@ -309,7 +320,7 @@ function ModelView({brand,cat,model,editor,admin,viewer,hq,data,favorites,onTogg
                           </div>
                           <input value={col.name} onChange={e=>onColName(col.id,e.target.value)}
                             style={{border:'1px dashed #ccc',borderRadius:3,padding:'2px 5px',fontSize:12,fontWeight:'bold',width:'100%',minWidth:50,background:'transparent',color:'#333'}}/>
-                          {admin&&model.columns.length>1&&<button onClick={()=>onDelCol(col.id)} style={{background:'none',border:'none',color:'#e53935',cursor:'pointer',fontSize:16,padding:0,lineHeight:1,flexShrink:0}}>×</button>}
+                          {(admin||editor)&&model.columns.length>1&&<button onClick={()=>onDelCol(col.id)} style={{background:'none',border:'none',color:'#e53935',cursor:'pointer',fontSize:16,padding:0,lineHeight:1,flexShrink:0}}>×</button>}
                         </div>
                       : <div onClick={()=>handleSort(col.id)} style={{cursor:'pointer',display:'flex',alignItems:'center',gap:4,userSelect:'none'}}>
                           {col.name}<span style={{fontSize:10,color:sortCol?.id===col.id?brand.color:'#aaa'}}>{sortIcon(col.id)}</span>
@@ -375,7 +386,7 @@ function ModelView({brand,cat,model,editor,admin,viewer,hq,data,favorites,onTogg
                           <button onClick={()=>onUpdate({parts:model.parts.map(pp=>pp.id!==p.id?pp:{...pp,discontinued:!pp.discontinued})})}
                             title={p.discontinued?'החזר לפעיל':'סמן כהופסק'} style={{background:'none',border:'none',cursor:'pointer',fontSize:12}}>{p.discontinued?'✅':'⛔'}</button>
                         </>}
-                        {admin && <button onClick={()=>onDelPart(p.id)} style={{background:'none',border:'none',color:'#e53935',cursor:'pointer',fontSize:13}}>🗑</button>}
+                        {(admin||editor) && <button onClick={()=>onDelPart(p.id)} style={{background:'none',border:'none',color:'#e53935',cursor:'pointer',fontSize:13}}>🗑</button>}
                       </div>
                     </td>
                   </tr>

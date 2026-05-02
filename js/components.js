@@ -1,10 +1,10 @@
-// ══════════ LOGIN SCREEN ══════════
+// ══════════ LOGIN ══════════
 function LoginScreen({data,onLogin}){
   const[pwd,setPwd]=useState('');const[err,setErr]=useState('');
   const submit=()=>{
-    if(pwd===data.pass)onLogin('admin');
-    else if(pwd===(data.editorPass||'editor1234'))onLogin('editor');
-    else if(pwd===(data.viewerPass||'tadir123'))onLogin('viewer');
+    const users=data.users||DEFAULT_USERS;
+    const match=users.find(u=>u.pass===pwd);
+    if(match){onLogin(match.role,match.id,match.label);}
     else setErr('סיסמה שגויה');
   };
   return(
@@ -27,8 +27,26 @@ function LoginScreen({data,onLogin}){
   );
 }
 
+// ══════════ EDITOR QUICK ALERTS (shown on login) ══════════
+function EditorAlertsBar({missingAlerts,reports,techRequests,onNav,onClose}){
+  const missing=missingAlerts.length;
+  const openReports=reports.filter(r=>!r.resolved).length;
+  const openTech=techRequests.filter(r=>!r.resolved).length;
+  const total=missing+openReports+openTech;
+  if(!total)return null;
+  return(
+    <div style={{background:'#fff8e1',borderBottom:'2px solid #ffe082',padding:'10px 16px',display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+      <span style={{fontWeight:'bold',fontSize:13,color:'#e65100'}}>📋 משימות ממתינות:</span>
+      {missing>0&&<span style={{background:'#fff3e0',color:'#e65100',borderRadius:6,padding:'3px 10px',fontSize:12,fontWeight:'bold',cursor:'pointer'}} onClick={()=>onNav('missing')}>⚠️ {missing} שדות חסרים</span>}
+      {openReports>0&&<span style={{background:'#ffebee',color:'#c62828',borderRadius:6,padding:'3px 10px',fontSize:12,fontWeight:'bold',cursor:'pointer'}} onClick={()=>onNav('reports')}>🔴 {openReports} דיווחי שגיאה</span>}
+      {openTech>0&&<span style={{background:'#e3f2fd',color:'#1565c0',borderRadius:6,padding:'3px 10px',fontSize:12,fontWeight:'bold',cursor:'pointer'}} onClick={()=>onNav('tech')}>💬 {openTech} בקשות טכנאים</span>}
+      <button onClick={onClose} style={{marginRight:'auto',background:'none',border:'none',color:'#aaa',cursor:'pointer',fontSize:16,flexShrink:0}}>✕</button>
+    </div>
+  );
+}
+
 // ══════════ TODO LIST ══════════
-function TodoList({data,reports,techRequests,onNav}){
+function TodoList({data,reports,techRequests,alerts}){
   const missingTadPn=[];
   data.brands.forEach(b=>b.categories.forEach(c=>c.models.forEach(m=>{
     const miss=m.parts.filter(p=>(p.values.nameHe||'').trim()&&!(p.values.tadPn||'').trim());
@@ -37,12 +55,13 @@ function TodoList({data,reports,techRequests,onNav}){
   const openReports=reports.filter(r=>!r.resolved).length;
   const openTech=techRequests.filter(r=>!r.resolved).length;
   const modelsNoMakat=missingTadPn.reduce((s,x)=>s+x.count,0);
+  const recentAlerts=alerts.slice(0,3);
 
   const items=[
-    modelsNoMakat>0&&{icon:'⚠️',color:'#e65100',bg:'#fff3e0',text:`${modelsNoMakat} חלקים ב-${missingTadPn.length} דגמים חסרי מק"ט תדיראן`,action:null},
-    openReports>0&&{icon:'🔴',color:'#c62828',bg:'#ffebee',text:`${openReports} דיווחי שגיאה ממתינים לטיפול`,action:null},
-    openTech>0&&{icon:'💬',color:'#1565c0',bg:'#e3f2fd',text:`${openTech} בקשות טכנאים לדגמים חסרים`,action:null},
-    modelsNoMakat===0&&openReports===0&&openTech===0&&{icon:'✅',color:'#2e7d32',bg:'#e8f5e9',text:'הכל מעודכן! אין משימות פתוחות.',action:null},
+    modelsNoMakat>0&&{icon:'⚠️',color:'#e65100',bg:'#fff3e0',text:`${modelsNoMakat} חלקים ב-${missingTadPn.length} דגמים חסרי מק"ט תדיראן`},
+    openReports>0&&{icon:'🔴',color:'#c62828',bg:'#ffebee',text:`${openReports} דיווחי שגיאה ממתינים לטיפול`},
+    openTech>0&&{icon:'💬',color:'#1565c0',bg:'#e3f2fd',text:`${openTech} בקשות טכנאים לדגמים חסרים`},
+    modelsNoMakat===0&&openReports===0&&openTech===0&&{icon:'✅',color:'#2e7d32',bg:'#e8f5e9',text:'הכל מעודכן! אין משימות פתוחות.'},
   ].filter(Boolean);
 
   return(
@@ -54,6 +73,18 @@ function TodoList({data,reports,techRequests,onNav}){
           <span style={{flex:1,fontSize:13,color:item.color,fontWeight:'500'}}>{item.text}</span>
         </div>
       ))}
+      {recentAlerts.length>0&&(
+        <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid var(--border)'}}>
+          <div style={{fontSize:11,color:'var(--sub)',marginBottom:6,fontWeight:'bold'}}>פעולות אחרונות:</div>
+          {recentAlerts.map((a,i)=>(
+            <div key={i} style={{fontSize:11,color:'var(--sub)',padding:'3px 0',display:'flex',gap:8}}>
+              <span style={{color:a.type==='delete'?'#e53935':'#2e7d32',fontWeight:'bold'}}>{a.type==='delete'?'🗑':'➕'}</span>
+              <span>{a.text}</span>
+              <span style={{marginRight:'auto',color:'var(--border)'}}>{a.ts}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -71,6 +102,7 @@ function TechRequestBox({loginRole}){
   return(
     <div style={{background:'var(--card)',borderRadius:12,padding:'16px 18px',boxShadow:'0 1px 4px var(--shadow)',border:'1px solid #e3f2fd',marginBottom:16}}>
       <div style={{fontWeight:'bold',fontSize:14,color:'#1565c0',marginBottom:8}}>💬 חסר לך דגם במערכת?</div>
+      <div style={{fontSize:12,color:'var(--sub)',marginBottom:10}}>רשום את שם הדגם החסר ונוסיף אותו בהקדם</div>
       {sent
         ?<div style={{textAlign:'center',color:'#4caf50',fontWeight:'bold',padding:'12px',background:'#e8f5e9',borderRadius:8}}>✅ הבקשה נשלחה! נטפל בהקדם.</div>
         :<>
@@ -84,8 +116,22 @@ function TechRequestBox({loginRole}){
   );
 }
 
+// ══════════ TECH SITE LINK ══════════
+function TechSiteLink(){
+  return(
+    <div style={{marginBottom:16}}>
+      <button onClick={()=>{if(confirm('לעבור לאתר הטכנאים?\nhttps://maortadiran88-eng.github.io/GREE/'))window.open('https://maortadiran88-eng.github.io/GREE/','_blank');}}
+        style={{width:'100%',padding:'11px 16px',background:'var(--card)',border:'2px solid #1565c030',borderRadius:12,cursor:'pointer',display:'flex',alignItems:'center',gap:10,boxShadow:'0 1px 4px var(--shadow)',color:'var(--text)',fontSize:13,fontWeight:'bold'}}>
+        <span style={{fontSize:20}}>🔧</span>
+        <span style={{flex:1,textAlign:'right'}}>אתר הטכנאים</span>
+        <span style={{color:'#1565c0',fontSize:12}}>→ לחץ לכניסה</span>
+      </button>
+    </div>
+  );
+}
+
 // ══════════ HOME SCREEN ══════════
-function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,techRequests}){
+function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,techRequests,alerts}){
   const total=data.brands.reduce((s,b)=>s+b.categories.reduce((ss,c)=>ss+c.models.length,0),0);
   const totalParts=data.brands.reduce((s,b)=>s+b.categories.reduce((ss,c)=>ss+c.models.reduce((sss,m)=>sss+m.parts.length,0),0),0);
   const[expandedBrand,setExpandedBrand]=useState(null);
@@ -96,10 +142,10 @@ function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,t
   const favModels=[];data.brands.forEach(b=>b.categories.forEach(c=>c.models.forEach(m=>{if(favorites.has(m.id))favModels.push({b,c,m});})));
 
   return(
-    <div style={{paddingBottom:40}}>
+    <div style={{paddingBottom:44}}>
       {/* Greeting */}
-      <div style={{background:'var(--card)',borderRadius:12,padding:'14px 18px',marginBottom:16,boxShadow:'0 1px 4px var(--shadow)',display:'flex',alignItems:'center',gap:10}}>
-        <span style={{fontSize:22,fontWeight:'bold',color:'var(--text)'}}>{greeting}</span>
+      <div style={{background:'var(--card)',borderRadius:12,padding:'14px 18px',marginBottom:16,boxShadow:'0 1px 4px var(--shadow)'}}>
+        <span style={{fontWeight:'bold',fontSize:18,color:'var(--text)'}}>{greeting}</span>
       </div>
 
       {/* Stats */}
@@ -112,11 +158,8 @@ function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,t
         ))}
       </div>
 
-      {/* Todo list — editor/admin */}
-      {(loginRole==='editor'||loginRole==='admin')&&<TodoList data={data} reports={reports||[]} techRequests={techRequests||[]} onNav={()=>{}}/>}
-
-      {/* Tech request — all */}
-      <TechRequestBox loginRole={loginRole}/>
+      {/* Todo — editor/admin */}
+      {(loginRole==='editor'||loginRole==='admin')&&<TodoList data={data} reports={reports||[]} techRequests={techRequests||[]} alerts={alerts||[]}/>}
 
       {/* Favorites */}
       {favModels.length>0&&(
@@ -135,8 +178,13 @@ function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,t
               </div>
             ))}
           </div>
+          {/* Tech site link after favorites */}
+          <div style={{marginTop:10}}><TechSiteLink/></div>
         </div>
       )}
+
+      {/* Tech request */}
+      <TechRequestBox loginRole={loginRole}/>
 
       {/* Recently viewed */}
       {recentModels.length>0&&(
@@ -153,8 +201,13 @@ function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,t
               </div>
             ))}
           </div>
+          {/* Tech site link after recent */}
+          <div style={{marginTop:10}}><TechSiteLink/></div>
         </div>
       )}
+
+      {/* If neither favorites nor recent, show tech link standalone */}
+      {favModels.length===0&&recentModels.length===0&&<TechSiteLink/>}
 
       {/* Brand list */}
       <div style={{fontWeight:'bold',fontSize:13,color:'var(--sub)',marginBottom:10}}>📁 לפי מותג</div>
@@ -175,8 +228,7 @@ function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,t
                     <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))',gap:6}}>
                       {c.models.map(m=>(
                         <div key={m.id} style={{padding:'8px 10px',borderRadius:8,border:`1px solid ${b.color}44`,cursor:'pointer',background:b.light+'88',transition:'background .1s',position:'relative'}}
-                          onMouseEnter={e=>e.currentTarget.style.background=b.color+'33'}
-                          onMouseLeave={e=>e.currentTarget.style.background=b.light+'88'}>
+                          onMouseEnter={e=>e.currentTarget.style.background=b.color+'33'} onMouseLeave={e=>e.currentTarget.style.background=b.light+'88'}>
                           <button onClick={ev=>{ev.stopPropagation();onToggleFav(m.id);}} style={{position:'absolute',top:4,left:6,background:'none',border:'none',fontSize:12,cursor:'pointer'}}>{favorites.has(m.id)?'⭐':'☆'}</button>
                           <div onClick={()=>onNav(b.id,c.id,m.id)} style={{paddingLeft:18}}>
                             <div style={{fontWeight:'bold',color:'var(--text)',fontSize:12,marginBottom:2}}>{m.name}</div>
@@ -204,8 +256,6 @@ function SidebarBrand({brand,sel,editor,admin,favorites,onToggleFav,onNav,onAddM
   const modRef=useRef();
 
   useEffect(()=>{if(sel?.bid===brand.id){setOpen(true);setOpenCats(p=>({...p,[sel.cid]:true}));}},[sel?.bid,sel?.cid]);
-
-  // Auto-open if filter matches something in this brand
   useEffect(()=>{
     if(!sidebarFilter)return;
     const hasMatch=brand.categories.some(c=>c.models.some(m=>m.name.toLowerCase().includes(sidebarFilter.toLowerCase())));
@@ -215,12 +265,8 @@ function SidebarBrand({brand,sel,editor,admin,favorites,onToggleFav,onNav,onAddM
   const toggleCat=id=>setOpenCats(p=>({...p,[id]:!p[id]}));
   const doAddMod=cid=>{const n=newModName.trim();if(!n)return;onAddModel(cid,n);setNewModName('');setAddingMod(null);};
   const startAdd=cid=>{setAddingMod(cid);setNewModName('');setTimeout(()=>modRef.current?.focus(),50);};
-
-  // All models for autocomplete
   const allModelNames=brand.categories.flatMap(c=>c.models.map(m=>m.name));
-  const suggestions=newModName.trim().length>=1
-    ?allModelNames.filter(n=>n.toLowerCase().includes(newModName.toLowerCase())&&n.toLowerCase()!==newModName.toLowerCase())
-    :[];
+  const suggestions=newModName.trim().length>=1?allModelNames.filter(n=>n.toLowerCase().includes(newModName.toLowerCase())&&n.toLowerCase()!==newModName.toLowerCase()):[];
   const isDuplicate=allModelNames.some(n=>n.toLowerCase()===newModName.trim().toLowerCase());
 
   return(
@@ -231,10 +277,7 @@ function SidebarBrand({brand,sel,editor,admin,favorites,onToggleFav,onNav,onAddM
       </div>
       {open&&<>
         {brand.categories.map(c=>{
-          // Filter models
-          const visibleModels=sidebarFilter
-            ?c.models.filter(m=>m.name.toLowerCase().includes(sidebarFilter.toLowerCase()))
-            :c.models;
+          const visibleModels=sidebarFilter?c.models.filter(m=>m.name.toLowerCase().includes(sidebarFilter.toLowerCase())):c.models;
           if(sidebarFilter&&!visibleModels.length)return null;
           return(
             <div key={c.id}>
@@ -278,12 +321,8 @@ function SidebarBrand({brand,sel,editor,admin,favorites,onToggleFav,onNav,onAddM
                     {suggestions.length>0&&!isDuplicate&&(
                       <div style={{background:'#fff',border:'1px solid var(--border)',borderRadius:6,overflow:'hidden',maxHeight:120,overflowY:'auto'}}>
                         {suggestions.slice(0,5).map(s=>(
-                          <div key={s} onClick={()=>setNewModName(s)}
-                            style={{padding:'5px 10px',cursor:'pointer',fontSize:12,color:'var(--text)',borderBottom:'1px solid var(--border)'}}
-                            onMouseEnter={e=>e.currentTarget.style.background='var(--row2)'}
-                            onMouseLeave={e=>e.currentTarget.style.background=''}>
-                            🔍 {s}
-                          </div>
+                          <div key={s} onClick={()=>setNewModName(s)} style={{padding:'5px 10px',cursor:'pointer',fontSize:12,color:'var(--text)',borderBottom:'1px solid var(--border)'}}
+                            onMouseEnter={e=>e.currentTarget.style.background='var(--row2)'} onMouseLeave={e=>e.currentTarget.style.background=''}>🔍 {s}</div>
                         ))}
                       </div>
                     )}
@@ -367,23 +406,27 @@ function CartPanel({cart,data,onRemove,onClear,onClose,waDefaults}){
 }
 
 // ══════════ NOTIFICATIONS PANEL ══════════
-function NotificationsPanel({missingAlerts,reports,techRequests,onNav,onResolve,onResolveTech,onClose}){
-  const[tab,setTab]=useState('missing');
+function NotificationsPanel({missingAlerts,reports,techRequests,alerts,onNav,onResolve,onResolveTech,onClose,initialTab}){
+  const[tab,setTab]=useState(initialTab||'missing');
   const unresolved=reports.filter(r=>!r.resolved);
   const unresolvedTech=techRequests.filter(r=>!r.resolved);
   return(
     <Modal onClose={onClose} wide title="🔔 התראות ומשימות">
       <div style={{display:'flex',gap:4,marginBottom:16,flexWrap:'wrap'}}>
-        {[['missing',`⚠️ שדות חסרים (${missingAlerts.length})`],['reports',`🔴 דיווחי שגיאה (${unresolved.length})`],['tech',`💬 בקשות טכנאים (${unresolvedTech.length})`]].map(([k,l])=>(
-          <button key={k} onClick={()=>setTab(k)} style={{flex:1,padding:'8px',border:'none',borderRadius:8,cursor:'pointer',fontWeight:'bold',fontSize:12,background:tab===k?'#1565c0':'var(--row2)',color:tab===k?'#fff':'var(--text)',minWidth:100}}>{l}</button>
+        {[
+          ['missing',`⚠️ שדות חסרים (${missingAlerts.length})`],
+          ['reports',`🔴 דיווחי שגיאה (${unresolved.length})`],
+          ['tech',`💬 בקשות טכנאים (${unresolvedTech.length})`],
+          ['activity',`📋 פעולות (${alerts.length})`],
+        ].map(([k,l])=>(
+          <button key={k} onClick={()=>setTab(k)} style={{flex:1,padding:'7px',border:'none',borderRadius:8,cursor:'pointer',fontWeight:'bold',fontSize:11,background:tab===k?'#1565c0':'var(--row2)',color:tab===k?'#fff':'var(--text)',minWidth:80}}>{l}</button>
         ))}
       </div>
       {tab==='missing'&&(
         <div style={{maxHeight:'55vh',overflowY:'auto'}}>
           {!missingAlerts.length&&<div style={{textAlign:'center',color:'#4caf50',padding:30,fontSize:14}}>✅ אין שדות חסרים!</div>}
           {missingAlerts.slice(0,50).map((a,i)=>(
-            <div key={i} onClick={()=>onNav(a.b.id,a.c.id,a.m.id)}
-              style={{display:'flex',gap:10,padding:'10px 12px',borderRadius:8,border:'1px solid #ff980022',background:'#fff8e1',marginBottom:6,cursor:'pointer',alignItems:'center'}}
+            <div key={i} onClick={()=>onNav(a.b.id,a.c.id,a.m.id)} style={{display:'flex',gap:10,padding:'10px 12px',borderRadius:8,border:'1px solid #ff980022',background:'#fff8e1',marginBottom:6,cursor:'pointer',alignItems:'center'}}
               onMouseEnter={e=>e.currentTarget.style.background='#fff3cd'} onMouseLeave={e=>e.currentTarget.style.background='#fff8e1'}>
               <span style={{background:a.b.color,color:'#fff',padding:'2px 7px',borderRadius:4,fontSize:10,fontWeight:'bold',flexShrink:0}}>{a.b.name}</span>
               <div style={{flex:1}}><div style={{fontWeight:'bold',fontSize:12,color:'#333'}}>{a.m.name}</div><div style={{fontSize:11,color:'#795548'}}>חלק: {a.p.values.nameHe||a.p.id} · חסר: {a.field}</div></div>
@@ -417,6 +460,17 @@ function NotificationsPanel({missingAlerts,reports,techRequests,onNav,onResolve,
                 <div style={{flex:1}}><div style={{fontWeight:'bold',fontSize:13,color:'var(--text)',marginBottom:4}}>{r.text}</div><div style={{fontSize:11,color:'var(--sub)'}}>{r.ts} · {r.submittedBy||'?'}</div></div>
                 {!r.resolved&&<button onClick={()=>onResolveTech(r.id)} style={sB('#4caf50')}>✓ טופל</button>}
               </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {tab==='activity'&&(
+        <div style={{maxHeight:'55vh',overflowY:'auto'}}>
+          {!alerts.length&&<div style={{textAlign:'center',color:'var(--sub)',padding:30}}>אין פעולות עדיין</div>}
+          {alerts.map((a,i)=>(
+            <div key={a.id||i} style={{display:'flex',gap:10,padding:'9px 12px',borderRadius:8,background:a.type==='delete'?'#ffebee':'#e8f5e9',marginBottom:6,alignItems:'center'}}>
+              <span style={{fontSize:16,flexShrink:0}}>{a.type==='delete'?'🗑':'➕'}</span>
+              <div style={{flex:1}}><div style={{fontSize:13,color:'var(--text)',fontWeight:'500'}}>{a.text}</div><div style={{fontSize:11,color:'var(--sub)'}}>{a.ts} · {a.actor||'?'}</div></div>
             </div>
           ))}
         </div>

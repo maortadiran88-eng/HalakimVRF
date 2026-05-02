@@ -335,7 +335,8 @@ function VersionHistoryModal({onRestore,onClose}){
 // ══════════ DASHBOARD ══════════
 function DashboardModal({data,onClose}){
   const[views,setViews]=useState([]);const[loading,setLoading]=useState(true);
-  useEffect(()=>{fbGetTopViews().then(v=>{setViews(v);setLoading(false);});},[ ]);
+  const loadViews=()=>{setLoading(true);fbGetTopViews().then(v=>{setViews(v);setLoading(false);});};
+  useEffect(()=>{loadViews();},[]);
 
   const totalModels=data.brands.reduce((s,b)=>s+b.categories.reduce((ss,c)=>ss+c.models.length,0),0);
   const totalParts=data.brands.reduce((s,b)=>s+b.categories.reduce((ss,c)=>ss+c.models.reduce((sss,m)=>sss+m.parts.length,0),0),0);
@@ -343,9 +344,13 @@ function DashboardModal({data,onClose}){
   const missingTadPn=data.brands.reduce((s,b)=>s+b.categories.reduce((ss,c)=>ss+c.models.reduce((sss,m)=>sss+m.parts.filter(p=>(p.values.nameHe||'').trim()&&!(p.values.tadPn||'').trim()).length,0),0),0);
   const maxViews=views.length?Math.max(...views.map(v=>v.count),1):1;
 
+  const resetViews=async()=>{
+    if(!confirm('לאפס את כל נתוני הצפיות? לא ניתן לבטל!'))return;
+    await fbResetViews();setViews([]);
+  };
+
   return(
     <Modal onClose={onClose} wide title="📊 דשבורד מנהל">
-      {/* Stats */}
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:10,marginBottom:20}}>
         {[['❄️','דגמים',totalModels,'#1565c0'],['🔩','חלקים',totalParts,'#2e7d32'],['⛔','הופסקו',discontinued,'#c62828'],['⚠️','חסרי מק"ט',missingTadPn,'#e65100']].map(([ic,lb,v,col])=>(
           <div key={lb} style={{background:'var(--row2)',borderRadius:10,padding:'12px',textAlign:'center',border:`2px solid ${col}33`}}>
@@ -356,8 +361,10 @@ function DashboardModal({data,onClose}){
         ))}
       </div>
 
-      {/* Top viewed */}
-      <div style={{fontWeight:'bold',fontSize:14,color:'var(--text)',marginBottom:10}}>👁 דגמים הכי נצפים</div>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+        <div style={{fontWeight:'bold',fontSize:14,color:'var(--text)',flex:1}}>👁 דגמים הכי נצפים</div>
+        <button onClick={resetViews} style={sB('#e53935')}>🔄 איפוס צפיות</button>
+      </div>
       {loading&&<div style={{textAlign:'center',padding:20,color:'var(--sub)'}}>טוען נתונים...</div>}
       {!loading&&!views.length&&<div style={{textAlign:'center',padding:16,color:'var(--sub)',fontSize:13,background:'var(--row2)',borderRadius:8}}>עדיין אין נתוני צפיות. הנתונים ייאספו עם השימוש.</div>}
       {views.slice(0,10).map((v,i)=>(
@@ -446,6 +453,53 @@ function ChangePwd({data,onSave,onClose}){
       ))}
       <div style={{display:'flex',gap:8,marginTop:14}}>
         <button onClick={submit} style={{flex:1,...BPr('#1565c0')}}>שמור הכל</button>
+        <button onClick={onClose} style={{flex:1,...BST}}>ביטול</button>
+      </div>
+    </Modal>
+  );
+}
+
+// ══════════ USERS MANAGER (admin only) ══════════
+function UsersManagerModal({data,onSave,onClose}){
+  const[users,setUsers]=useState(JSON.parse(JSON.stringify(data.users||DEFAULT_USERS)));
+  const roles=[{v:'admin',l:'מנהל'},{v:'editor',l:'עורך'},{v:'viewer',l:'צופה'}];
+
+  const upd=(id,k,v)=>setUsers(p=>p.map(u=>u.id!==id?u:{...u,[k]:v}));
+  const del=id=>{if(users.length<=1){alert('חייב להישאר לפחות משתמש אחד');return;}if(!confirm('למחוק משתמש?'))return;setUsers(p=>p.filter(u=>u.id!==id));};
+  const add=()=>setUsers(p=>[...p,{id:gid(),label:'משתמש חדש',pass:'pass1234',role:'viewer'}]);
+
+  return(
+    <Modal onClose={onClose} wide title="👥 ניהול משתמשים">
+      <div style={{fontSize:12,color:'var(--sub)',marginBottom:14,background:'#e3f2fd',borderRadius:8,padding:'10px 14px'}}>
+        ניתן להוסיף/להסיר משתמשים, לשנות סיסמאות, שמות ותפקידים. כל משתמש נכנס עם הסיסמה שלו.
+      </div>
+      <div style={{maxHeight:'52vh',overflowY:'auto',marginBottom:12}}>
+        {users.map((u,i)=>(
+          <div key={u.id} style={{display:'flex',gap:8,alignItems:'center',padding:'10px 12px',borderRadius:10,border:'1px solid var(--border)',marginBottom:8,flexWrap:'wrap',background:'var(--row2)'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:4,flex:'1 1 120px'}}>
+              <div style={{fontSize:10,color:'var(--sub)'}}>שם תפקיד</div>
+              <input value={u.label} onChange={e=>upd(u.id,'label',e.target.value)}
+                style={{border:'1px solid var(--border)',borderRadius:6,padding:'6px 8px',fontSize:13,color:'var(--inp)',background:'var(--ibg)'}}/>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:4,flex:'1 1 120px'}}>
+              <div style={{fontSize:10,color:'var(--sub)'}}>סיסמה</div>
+              <input value={u.pass} onChange={e=>upd(u.id,'pass',e.target.value)}
+                style={{border:'1px solid var(--border)',borderRadius:6,padding:'6px 8px',fontSize:13,color:'var(--inp)',background:'var(--ibg)',direction:'ltr'}}/>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:4,flex:'0 0 100px'}}>
+              <div style={{fontSize:10,color:'var(--sub)'}}>תפקיד</div>
+              <select value={u.role} onChange={e=>upd(u.id,'role',e.target.value)}
+                style={{border:'1px solid var(--border)',borderRadius:6,padding:'6px 8px',fontSize:13,color:'var(--inp)',background:'var(--ibg)'}}>
+                {roles.map(r=><option key={r.v} value={r.v}>{r.l}</option>)}
+              </select>
+            </div>
+            <button onClick={()=>del(u.id)} style={{background:'none',border:'1px solid #e53935',color:'#e53935',borderRadius:6,padding:'6px 10px',cursor:'pointer',fontSize:12,alignSelf:'flex-end'}}>מחק</button>
+          </div>
+        ))}
+      </div>
+      <button onClick={add} style={{width:'100%',padding:10,background:'#607d8b',color:'#fff',border:'none',borderRadius:8,cursor:'pointer',fontWeight:'bold',marginBottom:12}}>+ הוסף משתמש</button>
+      <div style={{display:'flex',gap:8}}>
+        <button onClick={()=>onSave(users)} style={{flex:1,...BPr('#1565c0')}}>✓ שמור שינויים</button>
         <button onClick={onClose} style={{flex:1,...BST}}>ביטול</button>
       </div>
     </Modal>
