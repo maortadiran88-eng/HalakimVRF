@@ -394,9 +394,14 @@ function ChangePwd({data,onSave,onClose}){
   const[greetings,setGreetings]=useState(data.greetings||{morning:'🌅 בוקר טוב!',noon:'☀️ צהריים טובים!',evening:'🌆 ערב טוב!',night:'🌙 לילה טוב!'});
 
   const submit=()=>{
-    if(cur!==data.pass){setErr('סיסמת מנהל נוכחית שגויה');return;}
+    // Validate against admin user in users array, fallback to legacy data.pass
+    const adminUser=(data.users||DEFAULT_USERS).find(u=>u.role==='admin');
+    const adminPass=adminUser?.pass||data.pass||'admin1234';
+    if(cur!==adminPass){setErr('סיסמת מנהל נוכחית שגויה');return;}
     if(an&&an.length<4){setErr('לפחות 4 תווים');return;}
-    onSave({...data,pass:an||data.pass,editorPass:en||data.editorPass||'editor1234',viewerPass:vn||data.viewerPass||'tadir123',waDefaults:wd,welcomeTitle:wt,welcomeSub:ws,disclaimer:disc,tips,greetings});
+    // Update admin pass in users array too
+    const updatedUsers=(data.users||DEFAULT_USERS).map(u=>u.role==='admin'&&u.id===adminUser?.id?{...u,pass:an||adminPass}:u);
+    onSave({...data,users:updatedUsers,pass:an||data.pass,editorPass:en||data.editorPass||'editor1234',viewerPass:vn||data.viewerPass||'tadir123',waDefaults:wd,welcomeTitle:wt,welcomeSub:ws,disclaimer:disc,tips,greetings});
   };
   const allCols=data.brands[0]?.categories[0]?.models[0]?.columns||DCOLS();
   return(
