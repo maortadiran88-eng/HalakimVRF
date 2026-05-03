@@ -3,41 +3,465 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>קטלוג חלקי חילוף</title>
+<title>קטלוג חלקי חילוף | VRF Parts</title>
+
+<!-- Google Fonts: Heebo (Hebrew) + Syne (Display) + JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;direction:rtl;background:var(--bg);color:var(--text);transition:background .25s,color .25s}
-:root{--bg:#f0f2f5;--card:#fff;--text:#1a1a2a;--sub:#6b7280;--border:#e5e7eb;--inp:#111;--row1:#fff;--row2:#f9fafb;--hi:#fff9c4;--sel:#e8f5e9;--sidebar:#fff;--ibg:#fff;--shadow:rgba(0,0,0,.08)}
-.dark{--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--sub:#94a3b8;--border:#334155;--inp:#f1f5f9;--row1:#1e293b;--row2:#0f172a;--hi:#3d3510;--sel:#14532d;--sidebar:#1e293b;--ibg:#334155;--shadow:rgba(0,0,0,.4)}
-::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
-@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-@keyframes tipFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-input,textarea,select{font-family:Arial,sans-serif}
-.discontinued-row td{position:relative}
+/* ═══════════════════════════════════════════
+   DESIGN SYSTEM — Industrial Tech Premium
+   Palette: Deep Navy + Electric Cyan + Steel
+   ═══════════════════════════════════════════ */
+
+:root {
+  /* Light Mode */
+  --bg:           #f0f4f8;
+  --bg2:          #e4eaf2;
+  --card:         #ffffff;
+  --card2:        #f7f9fc;
+  --text:         #0d1b2a;
+  --sub:          #4a5568;
+  --border:       #d1dbe8;
+  --inp:          #0d1b2a;
+  --row1:         #ffffff;
+  --row2:         #f7f9fc;
+  --hi:           #fef9c3;
+  --sel:          #e0f2fe;
+  --sidebar:      #ffffff;
+  --ibg:          #ffffff;
+  --shadow:       rgba(13,27,42,.10);
+
+  /* Brand */
+  --primary:      #0ea5e9;
+  --primary-dark: #0284c7;
+  --primary-glow: rgba(14,165,233,.18);
+  --accent:       #f97316;
+  --accent2:      #06b6d4;
+  --navy:         #0d1b2a;
+  --steel:        #64748b;
+
+  /* Typography */
+  --font-body:    'Heebo', sans-serif;
+  --font-display: 'Syne', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Spacing & Radius */
+  --r-sm:  6px;
+  --r-md:  12px;
+  --r-lg:  18px;
+  --r-xl:  24px;
+}
+
+.dark {
+  --bg:           #060d18;
+  --bg2:          #0a1628;
+  --card:         #0f1f35;
+  --card2:        #0d1b2a;
+  --text:         #e2eaf4;
+  --sub:          #7fa3c4;
+  --border:       #1e3a55;
+  --inp:          #e2eaf4;
+  --row1:         #0f1f35;
+  --row2:         #0a1628;
+  --hi:           #3d3200;
+  --sel:          #0c2d4a;
+  --sidebar:      #0f1f35;
+  --ibg:          #1e3a55;
+  --shadow:       rgba(0,0,0,.5);
+  --primary-glow: rgba(14,165,233,.25);
+}
+
+/* ═══ RESET & BASE ═══ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  direction: rtl;
+  background: var(--bg);
+  color: var(--text);
+  transition: background .3s, color .3s;
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Noise texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: .4;
+}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; opacity: .5; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary-dark); }
+
+/* ═══ TYPOGRAPHY ═══ */
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -.02em; }
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes spin        { to { transform: rotate(360deg); } }
+@keyframes fadeIn      { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+@keyframes slideUp     { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
+@keyframes slideInR    { from { opacity:0; transform:translateX(32px); } to { opacity:1; transform:none; } }
+@keyframes slideInL    { from { opacity:0; transform:translateX(-32px); } to { opacity:1; transform:none; } }
+@keyframes tickerScroll{ 0% { transform:translateX(0); } 100% { transform:translateX(-50%); } }
+@keyframes tipFadeIn   { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+@keyframes pulseGlow   { 0%,100% { box-shadow:0 0 0 0 var(--primary-glow); } 50% { box-shadow:0 0 0 8px transparent; } }
+@keyframes shimmer     { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
+@keyframes borderPulse { 0%,100% { border-color:var(--primary); } 50% { border-color:var(--accent2); } }
+@keyframes countUp     { from { opacity:0; transform:scale(.8); } to { opacity:1; transform:scale(1); } }
+@keyframes gridFloat   { 0%,100% { transform:translateY(0px); } 50% { transform:translateY(-6px); } }
+@keyframes scanline    { 0% { top:-100%; } 100% { top:200%; } }
+
+/* ═══ GLOBAL UTILITY ═══ */
+input, textarea, select {
+  font-family: var(--font-body);
+  transition: border-color .2s, box-shadow .2s;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* ═══ BUTTONS — Global Upgrade ═══ */
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all .2s cubic-bezier(.34,1.56,.64,1);
+}
+
+button:active { transform: scale(.96) !important; }
+
+/* Primary CTA buttons */
+button[style*="background:#2563eb"],
+button[style*="background:#0ea5e9"],
+button[style*="background:#16a34a"],
+button[style*="background:var(--primary)"] {
+  position: relative;
+  overflow: hidden;
+}
+
+button[style*="background:#2563eb"]::after,
+button[style*="background:#16a34a"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ═══ CARDS ═══ */
+[style*="border-radius:12px"],
+[style*="border-radius:16px"],
+[style*="borderRadius:'12px'"],
+[style*="borderRadius:'16px'"] {
+  transition: transform .25s ease, box-shadow .25s ease !important;
+}
+
+/* ═══ TABLES ═══ */
+table { border-collapse: collapse; }
+
+th {
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+}
+
+tr { transition: background .15s ease; }
+
+/* ═══ DISCONTINUED ROW ═══ */
+.discontinued-row td { position: relative; }
+
+/* ═══ LOGIN SCREEN SPECIAL ═══ */
+#root > div > div[style*="min-height:100vh"][style*="display:flex"][style*="align-items:center"] {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(14,165,233,.22) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 85% 80%, rgba(6,182,212,.15) 0%, transparent 60%),
+    linear-gradient(160deg, #060d18 0%, #0a1628 40%, #0d1b2a 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+#root > div > div[style*="min-height:100vh"][style*="display:flex"][style*="align-items:center"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(14,165,233,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14,165,233,.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: gridFloat 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+#root > div > div[style*="min-height:100vh"][style*="display:flex"][style*="align-items:center"]::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 60%;
+  background: linear-gradient(transparent, var(--primary), transparent);
+  left: 50%;
+  top: -20%;
+  animation: scanline 4s linear infinite;
+  pointer-events: none;
+  opacity: .3;
+}
+
+/* ═══ LOGO / BRAND ENHANCEMENT ═══ */
+/* Ticker bar */
+[style*="tickerScroll"] {
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  letter-spacing: .05em !important;
+}
+
+/* ═══ BADGE / TAG STYLES ═══ */
+span[style*="border-radius:4px"],
+span[style*="border-radius:6px"],
+span[style*="border-radius:8px"] {
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  letter-spacing: .04em !important;
+}
+
+/* ═══ SIDEBAR ═══ */
+nav[style*="position:fixed"][style*="sidebar"],
+div[style*="position:fixed"][style*="width:220px"],
+div[style*="position:fixed"][style*="width:200px"] {
+  border-left: 1px solid var(--border) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ═══ MODAL BACKDROP ═══ */
+div[style*="position:fixed"][style*="inset:0"][style*="background:rgba"] {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+
+/* ═══ MODAL CONTENT ═══ */
+div[style*="border-radius:16px"][style*="background:var(--card)"],
+div[style*="border-radius:12px"][style*="background:var(--card)"] {
+  border: 1px solid var(--border);
+  box-shadow:
+    0 32px 80px rgba(0,0,0,.25),
+    0 0 0 1px rgba(14,165,233,.08),
+    inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+
+/* ═══ INPUT FIELDS ═══ */
+input[style*="background:var(--ibg)"],
+select[style*="background:var(--ibg)"],
+textarea[style*="background:var(--ibg)"] {
+  border-radius: var(--r-md) !important;
+  font-size: 14px !important;
+  padding: 10px 14px !important;
+  border: 1.5px solid var(--border) !important;
+  background: var(--ibg) !important;
+  color: var(--inp) !important;
+  transition: all .2s ease !important;
+}
+
+/* ═══ LOADING SPINNER ═══ */
+div[style*="animation:spin"] {
+  border-color: var(--primary-glow) !important;
+  border-top-color: var(--primary) !important;
+  border-width: 3px !important;
+}
+
+/* ═══ STATS / COUNTERS ═══ */
+div[style*="font-size:28px"],
+div[style*="font-size:32px"],
+div[style*="font-size:24px"] {
+  font-family: var(--font-mono) !important;
+  animation: countUp .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+/* ═══ SEARCH INPUT SPECIAL ═══ */
+input[placeholder*="חיפוש"],
+input[placeholder*="Search"],
+input[placeholder*="חפש"] {
+  padding-right: 40px !important;
+  background-image: none !important;
+}
+
+/* ═══ NOTIFICATION BADGE ═══ */
+span[style*="background:#ef4444"],
+span[style*="background:red"],
+span[style*="background:#dc2626"] {
+  animation: pulseGlow .4s ease 1;
+  font-family: var(--font-mono) !important;
+  font-weight: 700 !important;
+}
+
+/* ═══ HEADER BAR ═══ */
+header,
+div[style*="position:sticky"][style*="top:0"],
+div[style*="position:fixed"][style*="top:0"][style*="right:0"] {
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* ═══ HOVER EFFECTS — Table rows ═══ */
+tr:hover td {
+  background: var(--sel) !important;
+  transition: background .12s ease;
+}
+
+/* ═══ FOCUS RING — Accessibility ═══ */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* ═══ CART PANEL ═══ */
+div[style*="position:fixed"][style*="bottom:0"][style*="right:0"],
+div[style*="position:fixed"][style*="bottom:0"][style*="left:0"] {
+  border-top: 1px solid var(--border) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow: 0 -8px 32px rgba(0,0,0,.15) !important;
+}
+
+/* ═══ TOOLTIP ═══ */
+div[style*="tipFadeIn"],
+[style*="animation:tipFadeIn"] {
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  letter-spacing: .03em !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18) !important;
+}
+
+/* ═══ PRINT ═══ */
+@media print {
+  body::before { display: none; }
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ═══ MOBILE RESPONSIVE BOOST ═══ */
+@media (max-width: 640px) {
+  body { font-size: 14px; }
+  th { font-size: 10px !important; }
+}
+
+/* ═══ LOGIN CARD ═══ */
+/* The login card gets a glassmorphism treatment */
+div[style*="min-height:100vh"] > div[style*="background:var(--card)"],
+div[style*="min-height:100vh"] > div > div[style*="background:var(--card)"] {
+  background: rgba(15, 31, 53, 0.75) !important;
+  border: 1px solid rgba(14,165,233,.2) !important;
+  box-shadow:
+    0 0 0 1px rgba(14,165,233,.1),
+    0 40px 100px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+}
+
+/* ═══ ACCENT LINE — Top of page ═══ */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), var(--accent2), var(--primary), transparent);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* ═══ SELECTION COLOR ═══ */
+::selection {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* ═══ SMOOTH TRANSITIONS ═══ */
+div, span, button, input, select, textarea, td, th, tr, li, a {
+  transition-property: background-color, color, border-color, box-shadow, opacity;
+  transition-duration: .15s;
+  transition-timing-function: ease;
+}
+
+/* Don't override animation transitions */
+*[style*="animation"] {
+  transition: none !important;
+}
+
+/* ═══ BRAND LOGO AREA BOOST ═══ */
+div[style*="font-weight:800"],
+div[style*="fontWeight:'800'"],
+h1, h2 {
+  font-family: var(--font-display) !important;
+}
+
+/* Mono elements like part numbers, codes */
+[style*="font-family:monospace"],
+[style*="fontFamily:'monospace'"],
+td:first-child,
+td:nth-child(2) {
+  font-family: var(--font-mono) !important;
+}
+
+/* ═══ COLUMN HEADERS ═══ */
+th {
+  position: relative;
+}
+th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: .4;
+}
 </style>
 </head>
 <body>
 <div id="root"></div>
+
 <script>
-  firebase.initializeApp({
-    apiKey:"AIzaSyA5SsSCkhQg1R5bi5FitJeB9uzrNm-1L8o",
-    authDomain:"helkey-hiluf.firebaseapp.com",
-    projectId:"helkey-hiluf",
-    storageBucket:"helkey-hiluf.firebasestorage.app",
-    messagingSenderId:"622794251696",
-    appId:"1:622794251696:web:aafcaf67b729d653de4a75"
-  });
-  window._db = firebase.firestore();
+firebase.initializeApp({
+  apiKey:"AIzaSyA5SsSCkhQg1R5bi5FitJeB9uzrNm-1L8o",
+  authDomain:"helkey-hiluf.firebaseapp.com",
+  projectId:"helkey-hiluf",
+  storageBucket:"helkey-hiluf.firebasestorage.app",
+  messagingSenderId:"622794251696",
+  appId:"1:622794251696:web:aafcaf67b729d653de4a75"
+});
+window._db = firebase.firestore();
 </script>
+
 <script type="text/babel" src="js/constants.js"></script>
 <script type="text/babel" src="js/firebase.js"></script>
 <script type="text/babel" src="js/helpers.js"></script>
