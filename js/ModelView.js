@@ -67,9 +67,12 @@ function ModelView({brand,cat,model,editor,admin,viewer,hq,data,favorites,onTogg
 
   const exportPDF = () => {
     const w = window.open('','_blank');
-    const rows = model.parts.map(p =>
+    // Hide empty columns and empty rows
+    const pdfCols = visibleCols.filter(col => model.parts.some(p => (p.values[col.id]||'').trim() !== ''));
+    const pdfRows = model.parts.filter(p => pdfCols.some(col => (p.values[col.id]||'').trim() !== ''));
+    const rows = pdfRows.map(p =>
       `<tr style="${p.discontinued?'opacity:.75':''}">
-        ${visibleCols.map(c=>`<td style="${p.discontinued?'color:#c62828;text-decoration:line-through;':''}">${p.values[c.id]||''}</td>`).join('')}
+        ${pdfCols.map(c=>`<td style="${p.discontinued?'color:#c62828;text-decoration:line-through;':''}">${p.values[c.id]||''}</td>`).join('')}
         <td>${p.discontinued?'<span style="color:#c62828;font-weight:bold;background:#ffebee;padding:2px 6px;border-radius:4px">⛔ הופסק</span>':''}</td>
       </tr>`).join('');
     const imgs = images.map(img=>`<img src="${img}" style="max-width:280px;max-height:200px;border:1px solid #ddd;border-radius:6px;margin:4px;object-fit:contain">`).join('');
@@ -79,7 +82,7 @@ function ModelView({brand,cat,model,editor,admin,viewer,hq,data,favorites,onTogg
       <body><h1>🔧 ${brand.name} — ${model.name}</h1>
       <p style="color:#6b7280">${cat.name}${model.synonyms?.length?' · '+model.synonyms.join(', '):''}</p>
       ${nh}${imgs?`<div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0">${imgs}</div>`:''}
-      <table><thead><tr>${visibleCols.map(c=>`<th>${c.name}</th>`).join('')}<th>סטטוס</th></tr></thead><tbody>${rows}</tbody></table>
+      <table><thead><tr>${pdfCols.map(c=>`<th>${c.name}</th>`).join('')}<th>סטטוס</th></tr></thead><tbody>${rows}</tbody></table>
       <p style="font-size:11px;color:#94a3b8;margin-top:8px">${model.parts.length} חלקים · ${new Date().toLocaleDateString('he-IL')}</p>
       <script>window.onload=()=>window.print();<\/script></body></html>`);
     w.document.close();

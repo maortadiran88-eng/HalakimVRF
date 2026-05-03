@@ -19,12 +19,11 @@ async function compressImg(file) {
 const updBrands=(brands,bid,cid,mid,fn)=>brands.map(b=>b.id!==bid?b:{...b,categories:b.categories.map(c=>c.id!==cid?c:{...c,models:c.models.map(m=>m.id!==mid?m:fn(m))})});
 
 function fuzzyMatch(q,text){
+  // Exact match only — no typo tolerance
   const n=s=>s.toLowerCase().replace(/[\s\-_'"]/g,'');
   const nq=n(q),nt=n(text);
   if(!nq)return false;
-  if(nt.includes(nq))return true;
-  if(nq.length>=3){for(let i=0;i<nq.length;i++){const d=nq.slice(0,i)+nq.slice(i+1);if(nt.includes(d))return true;}}
-  return false;
+  return nt.includes(nq);
 }
 function partMatches(q,p,cols){
   const qParts=q.trim().toLowerCase().split(/\s+/);
@@ -68,7 +67,7 @@ function NewsTicker({items}){
 }
 
 // ── Tips Bar — fixed at BOTTOM ──
-function TipsBar({tips}){
+function TipsBar({tips,canEdit,onEdit}){
   const[idx,setIdx]=useState(0);
   const[visible,setVisible]=useState(true);
   useEffect(()=>{
@@ -80,8 +79,39 @@ function TipsBar({tips}){
   return(
     <div style={{position:'fixed',bottom:0,right:0,left:0,zIndex:150,background:'#fff8e1',borderTop:'1px solid #ffe082',padding:'5px 14px',fontSize:12,color:'#795548',display:'flex',alignItems:'center',gap:8,minHeight:28,boxShadow:'0 -2px 8px rgba(0,0,0,.08)'}}>
       <span style={{flexShrink:0}}>💡</span>
-      <span style={{transition:'opacity .4s',opacity:visible?1:0}}>{tips[idx]||''}</span>
+      <span style={{transition:'opacity .4s',opacity:visible?1:0,flex:1}}>{tips[idx]||''}</span>
+      {canEdit&&<button onClick={onEdit} style={{background:'none',border:'none',cursor:'pointer',fontSize:13,color:'#b8860b',flexShrink:0,padding:'0 4px'}} title="ערוך טיפים">✏️</button>}
     </div>
+  );
+}
+
+// ══════════ TIPS EDIT MODAL ══════════
+function TipsEditModal({tips,onSave,onClose}){
+  const[localTips,setLocalTips]=useState([...tips]);
+  const[newTip,setNewTip]=useState('');
+  return(
+    <Modal onClose={onClose} wide title="💡 עריכת טיפים">
+      <div style={{maxHeight:'50vh',overflowY:'auto',marginBottom:12}}>
+        {localTips.map((t,i)=>(
+          <div key={i} style={{display:'flex',gap:6,alignItems:'center',marginBottom:6}}>
+            <input value={t} onChange={e=>setLocalTips(p=>p.map((x,j)=>j===i?e.target.value:x))}
+              style={{flex:1,border:'1px solid var(--border)',borderRadius:6,padding:'7px 10px',fontSize:13,color:'var(--inp)',background:'var(--ibg)'}}/>
+            <button onClick={()=>setLocalTips(p=>p.filter((_,j)=>j!==i))} style={{background:'none',border:'none',color:'#e53935',cursor:'pointer',fontSize:16,flexShrink:0}}>🗑</button>
+          </div>
+        ))}
+        {!localTips.length&&<div style={{textAlign:'center',color:'var(--sub)',padding:20}}>אין טיפים — הוסף למטה</div>}
+      </div>
+      <div style={{display:'flex',gap:6,marginBottom:14}}>
+        <input value={newTip} onChange={e=>setNewTip(e.target.value)} placeholder="הוסף טיפ חדש..."
+          onKeyDown={e=>{if(e.key==='Enter'&&newTip.trim()){setLocalTips(p=>[...p,newTip.trim()]);setNewTip('');}}}
+          style={{flex:1,border:'1px solid var(--border)',borderRadius:6,padding:'7px 10px',fontSize:13,color:'var(--inp)',background:'var(--ibg)'}}/>
+        <button onClick={()=>{if(newTip.trim()){setLocalTips(p=>[...p,newTip.trim()]);setNewTip('');}}} style={{...sB('#1565c0'),padding:'7px 14px'}}>+ הוסף</button>
+      </div>
+      <div style={{display:'flex',gap:8}}>
+        <button onClick={()=>onSave(localTips)} style={{flex:1,...BPr('#1565c0')}}>✓ שמור</button>
+        <button onClick={onClose} style={{flex:1,...BST}}>ביטול</button>
+      </div>
+    </Modal>
   );
 }
 

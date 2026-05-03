@@ -32,6 +32,9 @@ function App() {
   const [showNewsEditor, setShowNewsEditor] = useState(false);
   const [showBroadcast,  setShowBroadcast]  = useState(false);
   const [showUsersMgr,   setShowUsersMgr]   = useState(false);
+  const [showTipsEdit,   setShowTipsEdit]   = useState(false);
+  const [undoStack,      setUndoStack]      = useState([]); // last 5 reversible actions
+  const [showUndo,       setShowUndo]       = useState(null); // {msg, fn}
   const [broadcast,      setBroadcast]      = useState(null);
   const [newsItems,      setNewsItems]      = useState([]);
   const [favorites,      setFavorites]      = useState(() => {
@@ -145,6 +148,16 @@ function App() {
   const mutM = (bid,cid,mid,fn) => { changedMids.current.add(mid); mut(d=>({...d,brands:updBrands(d.brands,bid,cid,mid,fn)})); };
 
   const logAction = (action, extra={}) => fbHist({action,...extra,role:loginRole,actor:loginLabel||loginRole});
+
+  // Undo helper — stores up to 5 reversible snapshots in memory
+  const pushUndo = (msg, restoreFn) => {
+    setUndoStack(prev => {
+      const next = [{msg, restoreFn, ts:Date.now()}, ...prev].slice(0, 5);
+      return next;
+    });
+    setShowUndo({msg, fn: restoreFn});
+    setTimeout(() => setShowUndo(null), 8000); // hide snackbar after 8s
+  };
   const logAlert  = (type, text) => {
     fbLogAlert({type,text,actor:loginLabel||loginRole}).then(()=>fbGetAlerts().then(setAlerts));
   };
@@ -311,11 +324,10 @@ function App() {
       {/* Broadcast */}
       {broadcast && <BroadcastBanner msg={broadcast} onDismiss={()=>setBroadcast(null)}/>}
 
-      {/* News Ticker */}
-      <NewsTicker items={newsItems}/>
-
       {/* HEADER */}
-      <header ref={headerRef} style={{background:hdrBg,color:'#fff',padding:'10px 12px',display:'flex',alignItems:'center',gap:7,boxShadow:'0 2px 8px rgba(0,0,0,.25)',position:'sticky',top:0,zIndex:200,flexWrap:'wrap',transition:'background .3s'}}>
+      <header ref={headerRef} style={{background:hdrBg,color:'#fff',boxShadow:'0 2px 8px rgba(0,0,0,.25)',position:'sticky',top:0,zIndex:200,transition:'background .3s'}}>
+        {/* Row 1: icons */}
+        <div style={{padding:'8px 12px',display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
         <button onClick={()=>setSidebar(v=>!v)} style={bB('rgba(255,255,255,.2)')}>☰</button>
         <button onClick={goHome} style={{...bB('rgba(255,255,255,.2)'),fontSize:16}}>🏠</button>
         {sel&&<button onClick={goBack} style={bB('rgba(255,255,255,.2)')}>◀</button>}
@@ -327,16 +339,22 @@ function App() {
         {saving==='saved' &&<span style={{fontSize:11,color:'#a5d6a7',flexShrink:0}}>✓ נשמר</span>}
         {saving==='error' &&<button onClick={()=>alert('שגיאת שמירה: '+saveErr)} style={{fontSize:11,color:'#fff',background:'#e53935',border:'none',borderRadius:5,padding:'3px 8px',cursor:'pointer',flexShrink:0}}>⚠ שגיאה</button>}
 
-        <div style={{flex:'1 1 130px',position:'relative',minWidth:90}}>
-          <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="🔍 חיפוש — דגם / מק&quot;ט / שם חלק..."
-            style={{width:'100%',padding:'7px 28px 7px 10px',borderRadius:20,border:'none',fontSize:13,outline:'none',color:'#222',background:'#fff'}}/>
-          {query&&<button onClick={()=>setQuery('')} style={{position:'absolute',left:6,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#999',fontSize:15}}>✕</button>}
-        </div>
-
         <button onClick={()=>setShowCart(true)} style={{...bB('rgba(255,255,255,.2)'),position:'relative'}}>
           🛒{cart.length>0&&<span style={{position:'absolute',top:-4,left:-4,background:'#e53935',color:'#fff',borderRadius:'50%',width:16,height:16,fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold'}}>{cart.length}</span>}
         </button>
         <button onClick={()=>setShowHelp(true)} style={bB('rgba(255,255,255,.2)')}>❓</button>
+        </div>{/* end icons row */}
+        {/* Row 2: search full width */}
+        <div style={{padding:'0 10px 8px',display:'flex',alignItems:'center',gap:6}}>
+          <div style={{flex:1,position:'relative'}}>
+            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="🔍 חיפוש — דגם / מק&quot;ט / שם חלק..."
+              style={{width:'100%',padding:'8px 32px 8px 12px',borderRadius:20,border:'none',fontSize:14,outline:'none',color:'#222',background:'#fff',boxSizing:'border-box'}}/>
+            {query&&<button onClick={()=>setQuery('')} style={{position:'absolute',left:8,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#999',fontSize:16}}>✕</button>}
+          </div>
+        </div>
+      </header>
+      {/* News Ticker — below header */}
+      <NewsTicker items={newsItems}/>
 
         {/* Notifications — editor + admin */}
         {editor&&(
@@ -351,6 +369,7 @@ function App() {
         {/* Editor extras */}
         {editor&&!admin&&<button onClick={()=>setShowNewsEditor(true)} style={bB('#00796b')}>📰 חדשות</button>}
         {editor&&!admin&&<button onClick={()=>setShowBroadcast(true)} style={bB('#e65100')}>📢 הודעה</button>}
+        {editor&&!admin&&<button onClick={()=>setShowDashboard(true)} style={bB('rgba(255,255,255,.2)')}>📊 דשבורד</button>}
         {editor&&<button onClick={()=>setShowXls(true)} style={bB('#00796b')}>📥 ייבוא</button>}
 
         {/* Admin extras */}
@@ -367,11 +386,10 @@ function App() {
         {admin&&<button onClick={expXLS}                      style={bB('#2e7d32')}>📊 Excel</button>}
         {admin&&<button onClick={expJSON}                     style={bB('rgba(255,255,255,.2)')}>💾</button>}
         {admin&&<label  style={{...bB('rgba(255,255,255,.2)'),cursor:'pointer'}}>📂<input type="file" accept=".json" onChange={impFile} style={{display:'none'}}/></label>}
-      </header>
 
       {/* SEARCH DROPDOWN */}
       {query&&(
-        <div style={{position:'fixed',top:(headerRef.current?.offsetHeight||56)+56+'px',right:0,left:0,zIndex:300,background:'var(--card)',boxShadow:'0 6px 20px rgba(0,0,0,.2)',maxHeight:'55vh',overflowY:'auto',animation:'fadeIn .1s'}}>
+        <div style={{position:'fixed',top:(headerRef.current?.offsetHeight||80)+28+'px',right:0,left:0,zIndex:300,background:'var(--card)',boxShadow:'0 6px 20px rgba(0,0,0,.2)',maxHeight:'55vh',overflowY:'auto',animation:'fadeIn .1s'}}>
           <div style={{padding:'8px 14px',borderBottom:'1px solid var(--border)',color:'var(--sub)',fontSize:12,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
             <span>{results.length} תוצאות עבור: <strong style={{color:'var(--text)'}}>{query}</strong></span>
             <button onClick={()=>setQuery('')} style={{background:'#e53935',border:'none',borderRadius:5,color:'#fff',padding:'3px 10px',cursor:'pointer',fontSize:12}}>✕ סגור</button>
@@ -437,12 +455,20 @@ function App() {
                   onAddModel={(cid,name)=>handleAddModel(b,cid,name)}
                   onDelModel={async(cid,mid)=>{
                     if(!confirm('למחוק?'))return;
-                    const m=b.categories.find(c=>c.id===cid)?.models.find(m=>m.id===mid);
+                    const catObj=b.categories.find(c=>c.id===cid);
+                    const m=catObj?.models.find(m=>m.id===mid);
+                    const savedModel=m?JSON.parse(JSON.stringify(m)):null;
                     fbSaveSnapshot(data,loginLabel||loginRole,'לפני מחיקת דגם');
                     if(m) logAlert('delete',`נמחק דגם: ${m.name} (${b.name})`);
                     try{await db.collection('parts').doc(mid).delete();}catch{}
                     mut(d=>({...d,brands:d.brands.map(bb=>bb.id!==b.id?bb:{...bb,categories:bb.categories.map(c=>c.id!==cid?c:{...c,models:c.models.filter(m=>m.id!==mid)})})}));
                     if(sel?.mid===mid)setSel(null);
+                    if(savedModel){
+                      const newId=savedModel.id;changedMids.current.add(newId);
+                      pushUndo(`ביטול מחיקת דגם: ${savedModel.name}`,()=>{
+                        mut(d=>({...d,brands:d.brands.map(bb=>bb.id!==b.id?bb:{...bb,categories:bb.categories.map(c=>c.id!==cid?c:{...c,models:[...c.models,savedModel]})})}));
+                      });
+                    }
                   }}
                   onAddCat={name=>mut(d=>({...d,brands:d.brands.map(bb=>bb.id!==b.id?bb:{...bb,categories:[...bb.categories,{id:gid(),name,models:[]}]})}))}
                   onEditCat={(cid,name)=>mut(d=>({...d,brands:d.brands.map(bb=>bb.id!==b.id?bb:{...bb,categories:bb.categories.map(c=>c.id!==cid?c:{...c,name})})}))}
@@ -473,15 +499,27 @@ function App() {
                 onAddPart={()=>mutM(brand.id,cat.id,model.id,m=>({...m,parts:[...m.parts,{id:gid(),discontinued:false,tags:'',pinned:false,comments:[],values:Object.fromEntries(m.columns.map(c=>[c.id,'']))}]}))}
                 onDelPart={pid=>{
                   const p=model.parts.find(x=>x.id===pid);
-                  if(p){logAlert('delete',`נמחק חלק: ${p.values.nameHe||p.values.nameEn||pid} מדגם ${model.name}`);}
-                  fbSaveSnapshot(data,loginLabel||loginRole,'לפני מחיקת חלק');
+                  const partName=p?.values?.nameHe||p?.values?.nameEn||pid;
+                  const savedParts=[...model.parts];
+                  if(p){logAlert('delete',`נמחק חלק: ${partName} מדגם ${model.name}`);}
                   mutM(brand.id,cat.id,model.id,m=>({...m,parts:m.parts.filter(p=>p.id!==pid)}));
+                  pushUndo(`ביטול מחיקת חלק: ${partName}`,()=>{
+                    mutM(brand.id,cat.id,model.id,m=>({...m,parts:savedParts}));
+                  });
                 }}
                 onCell={(pid,cid,v)=>mutM(brand.id,cat.id,model.id,m=>({...m,parts:m.parts.map(p=>p.id!==pid?p:{...p,values:{...p.values,[cid]:v}})}))}
                 onColName={(cid,n)=>mutM(brand.id,cat.id,model.id,m=>({...m,columns:m.columns.map(c=>c.id!==cid?c:{...c,name:n})}))}
                 onMoveCol={(cid,dir)=>mutM(brand.id,cat.id,model.id,m=>{const cols=[...m.columns];const idx=cols.findIndex(c=>c.id===cid);const ni=idx+dir;if(ni<0||ni>=cols.length)return m;[cols[idx],cols[ni]]=[cols[ni],cols[idx]];return{...m,columns:cols};})}
                 onAddCol={()=>mutM(brand.id,cat.id,model.id,m=>{const cid=gid();return{...m,columns:[...m.columns,{id:cid,name:'עמודה חדשה'}],parts:m.parts.map(p=>({...p,values:{...p.values,[cid]:''}}))}})}
-                onDelCol={cid=>mutM(brand.id,cat.id,model.id,m=>({...m,columns:m.columns.filter(c=>c.id!==cid),parts:m.parts.map(p=>{const v={...p.values};delete v[cid];return{...p,values:v}})}))}
+                onDelCol={cid=>{
+                  const savedCols=[...model.columns];
+                  const savedParts=JSON.parse(JSON.stringify(model.parts));
+                  const colName=model.columns.find(c=>c.id===cid)?.name||cid;
+                  mutM(brand.id,cat.id,model.id,m=>({...m,columns:m.columns.filter(c=>c.id!==cid),parts:m.parts.map(p=>{const v={...p.values};delete v[cid];return{...p,values:v}})}));
+                  pushUndo(`ביטול מחיקת עמודה: ${colName}`,()=>{
+                    mutM(brand.id,cat.id,model.id,m=>({...m,columns:savedCols,parts:savedParts}));
+                  });
+                }}
                 onPaste={rows=>mutM(brand.id,cat.id,model.id,m=>({...m,parts:[...m.parts,...rows.map(r=>({id:gid(),discontinued:false,tags:'',pinned:false,comments:[],values:Object.fromEntries(m.columns.map((c,i)=>[c.id,r[i]||'']))}))]}))}
                 onImgUpload={e=>handleImgUpload(e,brand.id,cat.id,model.id)}
                 onDelImg={idx=>mutM(brand.id,cat.id,model.id,m=>({...m,images:m.images.filter((_,i)=>i!==idx)}))}
@@ -499,7 +537,7 @@ function App() {
       </div>
 
       {/* Tips bar bottom */}
-      <TipsBar tips={tips}/>
+      <TipsBar tips={tips} canEdit={editor} onEdit={()=>setShowTipsEdit(true)}/>
 
       {/* IMAGE MODAL */}
       {imgModal.imgs.length>0&&(
@@ -523,13 +561,16 @@ function App() {
       {showCart     &&<CartPanel cart={cart} data={data} onRemove={removeFromCart} onClear={clearCart} onClose={()=>setShowCart(false)} waDefaults={data.waDefaults||['nameHe','tadPn']}/>}
       {showNotif    &&<NotificationsPanel
         missingAlerts={missingAlerts} reports={reports} techRequests={techRequests} alerts={alerts}
-        initialTab={notifInitTab}
+        data={data} initialTab={notifInitTab}
         onNav={(bid,cid,mid)=>{nav(bid,cid,mid);setShowNotif(false);}}
         onResolve={async id=>{await fbResolveReport(id);fbGetReports().then(setReports);}}
         onResolveTech={async id=>{await fbResolveTechRequest(id);fbGetTechRequests().then(setTechRequests);}}
-        onClose={()=>setShowNotif(false)}/>}
+        onResolveAllReports={async()=>{await fbResolveAllReports();fbGetReports().then(setReports);}}
+        onResolveAllTech={async()=>{await fbResolveAllTechRequests();fbGetTechRequests().then(setTechRequests);}}
+        onClearAlerts={async()=>{await fbClearAlerts();fbGetAlerts().then(setAlerts);}}
+        onClose={()=>setShowNotif(false)}/>}}
       {showHelp     &&<HelpModal role={loginRole} onClose={()=>setShowHelp(false)}/>}
-      {showDashboard&&<DashboardModal data={data} onClose={()=>setShowDashboard(false)}/>}
+      {showDashboard&&<DashboardModal data={data} onClose={()=>setShowDashboard(false)}/>}}
       {showVersions &&<VersionHistoryModal
         onRestore={restoredBrands=>{restoredBrands.forEach(b=>b.categories.forEach(c=>c.models.forEach(m=>changedMids.current.add(m.id))));mut(d=>({...d,brands:restoredBrands}));setSel(null);}}
         onClose={()=>setShowVersions(false)}/>}
@@ -557,6 +598,26 @@ function App() {
           </div>
           <button onClick={()=>setShowHistory(false)} style={{width:'100%',marginTop:14,...BST}}>סגור</button>
         </Modal>
+      )}
+
+      {showTipsEdit&&<TipsEditModal tips={tips} onSave={newTips=>{mut(d=>({...d,tips:newTips}));setShowTipsEdit(false);}} onClose={()=>setShowTipsEdit(false)}/>}
+      {/* UNDO SNACKBAR */}
+      {showUndo&&(
+        <div style={{position:'fixed',bottom:40,left:'50%',transform:'translateX(-50%)',zIndex:999,background:'#323232',color:'#fff',borderRadius:10,padding:'12px 20px',display:'flex',alignItems:'center',gap:14,boxShadow:'0 4px 20px rgba(0,0,0,.4)',animation:'fadeIn .2s',whiteSpace:'nowrap'}}>
+          <span style={{fontSize:13}}>{showUndo.msg}</span>
+          <button onClick={()=>{showUndo.fn();setShowUndo(null);}} style={{background:'#a5d6a7',border:'none',borderRadius:6,padding:'6px 14px',cursor:'pointer',fontWeight:'bold',color:'#1b5e20',fontSize:12}}>↩ בטל מחיקה</button>
+          <button onClick={()=>setShowUndo(null)} style={{background:'none',border:'none',color:'#aaa',cursor:'pointer',fontSize:16}}>✕</button>
+        </div>
+      )}
+
+      {/* UNDO HISTORY BUTTON (for editor/admin) */}
+      {undoStack.length>0&&!showUndo&&(
+        <div style={{position:'fixed',bottom:40,left:16,zIndex:998}}>
+          <button onClick={()=>{const last=undoStack[0];if(last){last.restoreFn();setUndoStack(p=>p.slice(1));alert('✅ הפעולה בוטלה: '+last.msg);}}}
+            style={{background:'#546e7a',color:'#fff',border:'none',borderRadius:20,padding:'8px 16px',cursor:'pointer',fontSize:12,fontWeight:'bold',boxShadow:'0 2px 8px rgba(0,0,0,.3)'}}>
+            ↩ בטל ({undoStack.length})
+          </button>
+        </div>
       )}
 
       {chPwd    &&<ChangePwd   data={data} onSave={d=>{mut(()=>({...d}));setChPwd(false);alert('✅ נשמר');}} onClose={()=>setChPwd(false)}/>}

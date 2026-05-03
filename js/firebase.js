@@ -158,3 +158,29 @@ async function fbGetAlerts() {
     return s.docs.map(d=>({id:d.id,...d.data(),ts:d.data().ts?.toDate?.()?.toLocaleString('he-IL')||''}));
   } catch { return []; }
 }
+
+// ── Bulk resolve/clear for notifications ──
+async function fbResolveAllReports() {
+  try {
+    const s = await db.collection('reports').where('resolved','==',false).get();
+    const batch = db.batch();
+    s.docs.forEach(d=>batch.update(d.ref,{resolved:true}));
+    await batch.commit();
+  } catch {}
+}
+async function fbResolveAllTechRequests() {
+  try {
+    const s = await db.collection('techRequests').where('resolved','==',false).get();
+    const batch = db.batch();
+    s.docs.forEach(d=>batch.update(d.ref,{resolved:true}));
+    await batch.commit();
+  } catch {}
+}
+async function fbClearAlerts() {
+  try {
+    const s = await db.collection('alerts').get();
+    const batch = db.batch();
+    s.docs.forEach(d=>batch.delete(d.ref));
+    await batch.commit();
+  } catch {}
+}

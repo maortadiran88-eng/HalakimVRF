@@ -127,8 +127,8 @@ function HomeScreen({data,onNav,recent,favorites,onToggleFav,loginRole,reports,t
   return(
     <div style={{paddingBottom:44}}>
       {/* Greeting */}
-      <div style={{background:'var(--card)',borderRadius:12,padding:'14px 18px',marginBottom:16,boxShadow:'0 1px 4px var(--shadow)'}}>
-        <span style={{fontWeight:'bold',fontSize:18,color:'var(--text)'}}>{greeting}</span>
+      <div style={{background:'var(--card)',borderRadius:12,padding:'14px 18px',marginBottom:16,boxShadow:'0 1px 4px var(--shadow)',textAlign:'center'}}>
+        <span style={{fontWeight:'bold',fontSize:20,color:'var(--text)'}}>{greeting}</span>
       </div>
 
       {/* Stats */}
@@ -383,21 +383,47 @@ function CartPanel({cart,data,onRemove,onClear,onClose,waDefaults}){
 }
 
 // ══════════ NOTIFICATIONS PANEL ══════════
-function NotificationsPanel({missingAlerts,reports,techRequests,alerts,onNav,onResolve,onResolveTech,onClose,initialTab}){
+function NotificationsPanel({missingAlerts,reports,techRequests,alerts,data,onNav,onResolve,onResolveTech,onClose,initialTab,
+  onResolveAllReports,onResolveAllTech,onClearAlerts}){
+  // Duplicate model names detection
+  const duplicateNames=useMemo(()=>{
+    if(!data)return[];
+    const nameMap={};
+    data.brands.forEach(b=>b.categories.forEach(c=>c.models.forEach(m=>{
+      const key=m.name.trim().toLowerCase();
+      if(!nameMap[key])nameMap[key]=[];
+      nameMap[key].push({b,c,m});
+    })));
+    return Object.values(nameMap).filter(arr=>arr.length>1);
+  },[data]);
   const[tab,setTab]=useState(initialTab||'missing');
   const unresolved=reports.filter(r=>!r.resolved);
   const unresolvedTech=techRequests.filter(r=>!r.resolved);
+
+  const tabs=[
+    ['missing',`⚠️ שדות חסרים (${missingAlerts.length})`],
+    ['reports',`🔴 שגיאות (${unresolved.length})`],
+    ['tech',`💬 בקשות (${unresolvedTech.length})`],
+    ['activity',`📋 פעולות (${alerts.length})`],
+    ...(duplicateNames.length?[['dupes',`🔁 כפולים (${duplicateNames.length})`]]:[]),
+  ];
+
+  const resetCurrentTab=async()=>{
+    if(tab==='reports'){if(!confirm('לסמן כל הדיווחים כטופלו?'))return;await onResolveAllReports();alert('✅ כל הדיווחים סומנו כטופלו');}
+    else if(tab==='tech'){if(!confirm('לסמן כל הבקשות כטופלו?'))return;await onResolveAllTech();alert('✅ כל הבקשות סומנו כטופלו');}
+    else if(tab==='activity'){if(!confirm('למחוק את כל הפעולות?'))return;await onClearAlerts();alert('✅ הפעולות נמחקו');}
+    else if(tab==='missing'){alert('שדות חסרים מתעדכנים אוטומטית בעת עדכון המידע');}
+  };
+
   return(
     <Modal onClose={onClose} wide title="🔔 התראות ומשימות">
-      <div style={{display:'flex',gap:4,marginBottom:16,flexWrap:'wrap'}}>
-        {[
-          ['missing',`⚠️ שדות חסרים (${missingAlerts.length})`],
-          ['reports',`🔴 דיווחי שגיאה (${unresolved.length})`],
-          ['tech',`💬 בקשות טכנאים (${unresolvedTech.length})`],
-          ['activity',`📋 פעולות (${alerts.length})`],
-        ].map(([k,l])=>(
-          <button key={k} onClick={()=>setTab(k)} style={{flex:1,padding:'7px',border:'none',borderRadius:8,cursor:'pointer',fontWeight:'bold',fontSize:11,background:tab===k?'#1565c0':'var(--row2)',color:tab===k?'#fff':'var(--text)',minWidth:80}}>{l}</button>
+      <div style={{display:'flex',gap:4,marginBottom:10,flexWrap:'wrap'}}>
+        {tabs.map(([k,l])=>(
+          <button key={k} onClick={()=>setTab(k)} style={{flex:1,padding:'7px',border:'none',borderRadius:8,cursor:'pointer',fontWeight:'bold',fontSize:11,background:tab===k?'#1565c0':'var(--row2)',color:tab===k?'#fff':'var(--text)',minWidth:70}}>{l}</button>
         ))}
+      </div>
+      <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
+        <button onClick={resetCurrentTab} style={sB('#e53935')}>🔄 איפוס טאב זה</button>
       </div>
       {tab==='missing'&&(
         <div style={{maxHeight:'55vh',overflowY:'auto'}}>
@@ -448,6 +474,27 @@ function NotificationsPanel({missingAlerts,reports,techRequests,alerts,onNav,onR
             <div key={a.id||i} style={{display:'flex',gap:10,padding:'9px 12px',borderRadius:8,background:a.type==='delete'?'#ffebee':'#e8f5e9',marginBottom:6,alignItems:'center'}}>
               <span style={{fontSize:16,flexShrink:0}}>{a.type==='delete'?'🗑':'➕'}</span>
               <div style={{flex:1}}><div style={{fontSize:13,color:'var(--text)',fontWeight:'500'}}>{a.text}</div><div style={{fontSize:11,color:'var(--sub)'}}>{a.ts} · {a.actor||'?'}</div></div>
+            </div>
+          ))}
+        </div>
+      )}
+      {tab==='dupes'&&(
+        <div style={{maxHeight:'55vh',overflowY:'auto'}}>
+          {!duplicateNames.length&&<div style={{textAlign:'center',color:'#4caf50',padding:30,fontSize:14}}>✅ אין דגמים עם שם זהה!</div>}
+          {duplicateNames.map((group,gi)=>(
+            <div key={gi} style={{padding:'12px',borderRadius:8,border:'1px solid #ff980055',background:'#fff8e1',marginBottom:8}}>
+              <div style={{fontWeight:'bold',fontSize:13,color:'#e65100',marginBottom:8}}>🔁 "{group[0].m.name}" — {group.length} דגמים עם שם זהה</div>
+              {group.map(({b,c,m},i)=>(
+                <div key={i} onClick={()=>onNav(b.id,c.id,m.id)}
+                  style={{display:'flex',gap:8,alignItems:'center',padding:'6px 10px',borderRadius:6,background:'var(--card)',marginBottom:4,cursor:'pointer'}}
+                  onMouseEnter={e=>e.currentTarget.style.background='var(--row2)'}
+                  onMouseLeave={e=>e.currentTarget.style.background='var(--card)'}>
+                  <span style={{background:b.color,color:'#fff',padding:'2px 7px',borderRadius:4,fontSize:10,fontWeight:'bold'}}>{b.name}</span>
+                  <span style={{fontSize:12,color:'var(--sub)'}}>{c.name}</span>
+                  <span style={{fontSize:11,color:'#1565c0',fontWeight:'bold'}}>{m.parts.length} חלקים</span>
+                  <span style={{marginRight:'auto',color:'#e65100',fontSize:11}}>→ לחץ לפתיחה</span>
+                </div>
+              ))}
             </div>
           ))}
         </div>

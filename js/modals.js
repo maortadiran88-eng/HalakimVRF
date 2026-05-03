@@ -9,6 +9,32 @@ function WaEditorModal({brand,cat,model,selRows,defaultCols,onClose}){
     const lines=sp.map((p,i)=>{const vals=activeCols.map(c=>{const v=(p.values[c.id]||'').trim();return v?`${c.name}: ${v}`:'';}).filter(Boolean);return`*${i+1}.* ${vals.join(' | ')}`;}).join('\n');
     return`${hdr}\n\n${lines}\n\n_סה"כ ${sp.length} חלקים_`;
   };
+  const exportSelectedPDF=()=>{
+    // Hide empty cols and empty rows from selected
+    const pdfCols=activeCols.filter(col=>sp.some(p=>(p.values[col.id]||'').trim()!==''));
+    const w=window.open('','_blank');
+    const rows=sp.map(p=>{
+      const hasData=pdfCols.some(col=>(p.values[col.id]||'').trim()!=='');
+      if(!hasData)return'';
+      return`<tr style="${p.discontinued?'opacity:.75':''}">
+        ${pdfCols.map(col=>`<td style="${p.discontinued?'color:#c62828;text-decoration:line-through;':''}">${p.values[col.id]||''}</td>`).join('')}
+        <td>${p.discontinued?'<span style="color:#c62828;font-weight:bold;background:#ffebee;padding:2px 6px;border-radius:4px">⛔ הופסק</span>':''}</td>
+      </tr>`;
+    }).filter(Boolean).join('');
+    w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>${model.name} — נבחרים</title>
+      <style>body{font-family:Arial;padding:30px;color:#1a1a2a;direction:rtl}h1{color:${brand.color};font-size:20px}
+      table{border-collapse:collapse;width:100%;margin-top:14px;font-size:13px}
+      th{background:${brand.color};color:#fff;padding:9px 12px;text-align:right}
+      td{border:1px solid #e5e7eb;padding:7px 12px}tr:nth-child(even){background:#f9fafb}
+      @page{margin:20mm}</style></head>
+      <body><h1>🔧 ${brand.name} — ${model.name}</h1>
+      <p style="color:#6b7280">${cat.name} · ${sp.length} פריטים נבחרו</p>
+      <table><thead><tr>${pdfCols.map(col=>`<th>${col.name}</th>`).join('')}<th>סטטוס</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <p style="font-size:11px;color:#94a3b8;margin-top:8px">${new Date().toLocaleDateString('he-IL')} ${new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}</p>
+      <script>window.onload=()=>window.print();<\/script></body></html>`);
+    w.document.close();
+  };
   return(
     <Modal onClose={onClose} wide title="📱 עריכת הודעת ווצאפ">
       <div style={{marginBottom:14}}>
@@ -36,8 +62,9 @@ function WaEditorModal({brand,cat,model,selRows,defaultCols,onClose}){
       </div>
       <div style={{background:'var(--row2)',borderRadius:8,padding:'8px 12px',marginBottom:14,fontSize:12,color:'var(--sub)'}}>{sp.length} שורות · {activeCols.length} עמודות נבחרו</div>
       <div style={{display:'flex',gap:8}}>
-        <button onClick={()=>window.open('https://wa.me/?text='+encodeURIComponent(buildMsg()),'_blank')} disabled={!colSel.size} style={{flex:1,...BPr(colSel.size?'#25D366':'#aaa')}}>📱 שלח לווצאפ</button>
-        <button onClick={onClose} style={{flex:1,...BST}}>ביטול</button>
+        <button onClick={exportSelectedPDF} disabled={!colSel.size} style={{flex:1,...BPr(colSel.size?'#546e7a':'#aaa')}}>🖨️ PDF נבחרים</button>
+        <button onClick={()=>window.open('https://wa.me/?text='+encodeURIComponent(buildMsg()),'_blank')} disabled={!colSel.size} style={{flex:1,...BPr(colSel.size?'#25D366':'#aaa')}}>📱 ווצאפ</button>
+        <button onClick={onClose} style={{...BST,padding:'10px 14px'}}>✕</button>
       </div>
     </Modal>
   );
