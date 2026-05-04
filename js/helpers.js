@@ -50,18 +50,36 @@ function Modal({children,onClose,wide,title}){
 
 // ── News Ticker ──
 function NewsTicker({items}){
+  const[idx,setIdx]=useState(0);
+  const[visible,setVisible]=useState(true);
+  useEffect(()=>{
+    if(!items||items.length<=1)return;
+    const t=setInterval(()=>{
+      setVisible(false);
+      setTimeout(()=>{setIdx(i=>(i+1)%items.length);setVisible(true);},400);
+    },10000);
+    return()=>clearInterval(t);
+  },[items]);
   if(!items||!items.length)return null;
-  const all=[...items,...items];
   return(
-    <div style={{background:'#1565c0',color:'#fff',height:28,overflow:'hidden',display:'flex',alignItems:'center',position:'relative',zIndex:190}}>
-      <div style={{flexShrink:0,background:'#0d47a1',padding:'0 12px',height:'100%',display:'flex',alignItems:'center',fontWeight:'bold',fontSize:12,whiteSpace:'nowrap',gap:4}}>📰 חדשות</div>
-      <div style={{overflow:'hidden',flex:1,position:'relative',height:'100%',display:'flex',alignItems:'center'}}>
-        <div style={{display:'flex',gap:0,whiteSpace:'nowrap',animation:`tickerScroll ${Math.max(items.length*8,20)}s linear infinite`,willChange:'transform'}}>
-          {all.map((item,i)=>(
-            <span key={i} style={{padding:'0 32px',fontSize:13,borderLeft:'1px solid rgba(255,255,255,.2)'}}>{item}</span>
+    <div style={{background:'#1a56a0',color:'#fff',height:30,overflow:'hidden',display:'flex',alignItems:'center',position:'relative',zIndex:190,boxShadow:'0 1px 4px rgba(0,0,0,.2)'}}>
+      <div style={{flexShrink:0,background:'#1043a0',padding:'0 14px',height:'100%',display:'flex',alignItems:'center',fontWeight:'bold',fontSize:12,whiteSpace:'nowrap',gap:5,letterSpacing:.3}}>
+        📰 <span>עדכון</span>
+        {items.length>1&&<span style={{background:'rgba(255,255,255,.2)',borderRadius:10,padding:'1px 7px',fontSize:11}}>{idx+1}/{items.length}</span>}
+      </div>
+      <div style={{overflow:'hidden',flex:1,padding:'0 16px',display:'flex',alignItems:'center'}}>
+        <span style={{fontSize:13,transition:'opacity .4s',opacity:visible?1:0,fontWeight:'500'}}>
+          {items[idx]||''}
+        </span>
+      </div>
+      {items.length>1&&(
+        <div style={{display:'flex',gap:4,padding:'0 10px',flexShrink:0}}>
+          {items.map((_,i)=>(
+            <div key={i} onClick={()=>{setVisible(false);setTimeout(()=>{setIdx(i);setVisible(true);},200);}}
+              style={{width:6,height:6,borderRadius:'50%',background:i===idx?'#fff':'rgba(255,255,255,.35)',cursor:'pointer',transition:'background .3s'}}/>
           ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }
