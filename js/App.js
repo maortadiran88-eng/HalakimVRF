@@ -332,6 +332,10 @@ function App() {
           <button onClick={()=>setSidebar(v=>!v)} style={bB('rgba(255,255,255,.18)')}>☰</button>
           <button onClick={goHome} style={bB('rgba(255,255,255,.18)')}>🏠</button>
           {sel&&<button onClick={goBack} style={bB('rgba(255,255,255,.18)')}>◀</button>}
+          <button onClick={()=>{setLoginRole(null);setSel(null);setSidebar(false);}} style={{...bB('rgba(255,255,255,.18)'),display:'flex',alignItems:'center',gap:4}} title="התנתק">
+            <span style={{fontSize:10,lineHeight:1}}>⬤</span>
+            <span>יציאה</span>
+          </button>
           <span style={{fontWeight:'bold',fontSize:13,flexShrink:0,letterSpacing:.3}}>🔧 חלקי חילוף</span>
           <span style={{fontSize:10,color:'rgba(255,255,255,.7)',flexShrink:0,fontFamily:'monospace'}}>
             {now.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'})} {now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
@@ -357,8 +361,6 @@ function App() {
           )}
 
           <button onClick={toggleDark} style={bB('rgba(255,255,255,.18)')}>{dark?'☀️':'🌙'}</button>
-          <button onClick={()=>{setLoginRole(null);setSel(null);setSidebar(false);}} style={bB('rgba(255,255,255,.18)')}>⬤</button>
-
           {/* Editor extras */}
           {editor&&!admin&&<button onClick={()=>setShowNewsEditor(true)} style={bB('#00897b')}>📰</button>}
           {editor&&!admin&&<button onClick={()=>setShowBroadcast(true)} style={bB('#e65100')}>📢</button>}
