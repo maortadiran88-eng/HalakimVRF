@@ -325,69 +325,77 @@ function App() {
       {broadcast && <BroadcastBanner msg={broadcast} onDismiss={()=>setBroadcast(null)}/>}
 
       {/* HEADER */}
-      <header ref={headerRef} style={{background:hdrBg,color:'#fff',boxShadow:'0 2px 8px rgba(0,0,0,.25)',position:'sticky',top:0,zIndex:200,transition:'background .3s'}}>
-        {/* Row 1: icons */}
-        <div style={{padding:'8px 12px',display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
-        <button onClick={()=>setSidebar(v=>!v)} style={bB('rgba(255,255,255,.2)')}>☰</button>
-        <button onClick={goHome} style={{...bB('rgba(255,255,255,.2)'),fontSize:16}}>🏠</button>
-        {sel&&<button onClick={goBack} style={bB('rgba(255,255,255,.2)')}>◀</button>}
-        <span style={{fontWeight:'bold',fontSize:14,flexShrink:0}}>🔧 חלקי חילוף</span>
-        <span style={{fontSize:11,color:'rgba(255,255,255,.75)',flexShrink:0,fontFamily:'monospace'}}>
-          {now.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'})} {now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
-        </span>
-        {saving==='saving'&&<span style={{fontSize:11,color:'rgba(255,255,255,.8)',flexShrink:0}}>💾 שומר...</span>}
-        {saving==='saved' &&<span style={{fontSize:11,color:'#a5d6a7',flexShrink:0}}>✓ נשמר</span>}
-        {saving==='error' &&<button onClick={()=>alert('שגיאת שמירה: '+saveErr)} style={{fontSize:11,color:'#fff',background:'#e53935',border:'none',borderRadius:5,padding:'3px 8px',cursor:'pointer',flexShrink:0}}>⚠ שגיאה</button>}
+      <header ref={headerRef} style={{background:hdrBg,color:'#fff',boxShadow:'0 3px 12px rgba(0,0,0,.3)',position:'sticky',top:0,zIndex:200,transition:'background .3s'}}>
 
-        <button onClick={()=>setShowCart(true)} style={{...bB('rgba(255,255,255,.2)'),position:'relative'}}>
-          🛒{cart.length>0&&<span style={{position:'absolute',top:-4,left:-4,background:'#e53935',color:'#fff',borderRadius:'50%',width:16,height:16,fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold'}}>{cart.length}</span>}
-        </button>
-        <button onClick={()=>setShowHelp(true)} style={bB('rgba(255,255,255,.2)')}>❓</button>
-        </div>{/* end icons row */}
-        {/* Row 2: search full width */}
-        <div style={{padding:'0 10px 8px',display:'flex',alignItems:'center',gap:6}}>
-          <div style={{flex:1,position:'relative'}}>
-            <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="🔍 חיפוש — דגם / מק&quot;ט / שם חלק..."
-              style={{width:'100%',padding:'8px 32px 8px 12px',borderRadius:20,border:'none',fontSize:14,outline:'none',color:'#222',background:'#fff',boxSizing:'border-box'}}/>
-            {query&&<button onClick={()=>setQuery('')} style={{position:'absolute',left:8,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#999',fontSize:16}}>✕</button>}
+        {/* Row 1 — all buttons compact */}
+        <div style={{padding:'8px 10px',display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'}}>
+          <button onClick={()=>setSidebar(v=>!v)} style={bB('rgba(255,255,255,.18)')}>☰</button>
+          <button onClick={goHome} style={bB('rgba(255,255,255,.18)')}>🏠</button>
+          {sel&&<button onClick={goBack} style={bB('rgba(255,255,255,.18)')}>◀</button>}
+          <span style={{fontWeight:'bold',fontSize:13,flexShrink:0,letterSpacing:.3}}>🔧 חלקי חילוף</span>
+          <span style={{fontSize:10,color:'rgba(255,255,255,.7)',flexShrink:0,fontFamily:'monospace'}}>
+            {now.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'})} {now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}
+          </span>
+          {saving==='saving'&&<span style={{fontSize:11,color:'rgba(255,255,255,.8)',flexShrink:0}}>💾</span>}
+          {saving==='saved' &&<span style={{fontSize:11,color:'#a5d6a7',flexShrink:0}}>✓</span>}
+          {saving==='error' &&<button onClick={()=>alert('שגיאת שמירה: '+saveErr)} style={{fontSize:11,color:'#fff',background:'#e53935',border:'none',borderRadius:5,padding:'3px 7px',cursor:'pointer',flexShrink:0}}>⚠</button>}
+
+          {/* Spacer */}
+          <div style={{flex:1}}/>
+
+          {/* Common buttons */}
+          <button onClick={()=>setShowCart(true)} style={{...bB('rgba(255,255,255,.18)'),position:'relative'}}>
+            🛒{cart.length>0&&<span style={{position:'absolute',top:-4,left:-4,background:'#e53935',color:'#fff',borderRadius:'50%',width:16,height:16,fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold'}}>{cart.length}</span>}
+          </button>
+          <button onClick={()=>setShowHelp(true)} style={bB('rgba(255,255,255,.18)')}>❓</button>
+
+          {/* Notifications — editor + admin */}
+          {editor&&(
+            <button onClick={()=>openNotif()} style={{...bB('rgba(255,255,255,.18)'),position:'relative'}}>
+              🔔{notifCount>0&&<span style={{position:'absolute',top:-4,left:-4,background:'#e53935',color:'#fff',borderRadius:'50%',width:16,height:16,fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold'}}>{notifCount}</span>}
+            </button>
+          )}
+
+          <button onClick={toggleDark} style={bB('rgba(255,255,255,.18)')}>{dark?'☀️':'🌙'}</button>
+          <button onClick={()=>{setLoginRole(null);setSel(null);setSidebar(false);}} style={bB('rgba(255,255,255,.18)')}>⬤</button>
+
+          {/* Editor extras */}
+          {editor&&!admin&&<button onClick={()=>setShowNewsEditor(true)} style={bB('#00897b')}>📰</button>}
+          {editor&&!admin&&<button onClick={()=>setShowBroadcast(true)} style={bB('#e65100')}>📢</button>}
+          {editor&&!admin&&<button onClick={()=>setShowDashboard(true)} style={bB('rgba(255,255,255,.18)')}>📊</button>}
+          {editor&&<button onClick={()=>setShowXls(true)} style={bB('#00897b')}>📥</button>}
+
+          {/* Admin extras */}
+          {admin&&<button onClick={()=>setBrandMgr(true)}      style={bB('rgba(255,255,255,.18)')}>⚙</button>}
+          {admin&&<button onClick={()=>setShowBulkMove(true)}  style={bB('rgba(255,255,255,.18)')}>🔀</button>}
+          {admin&&<button onClick={()=>setShowBulkDel(true)}   style={bB('#b71c1c')}>🗑</button>}
+          {admin&&<button onClick={()=>{setShowHistory(true);fbGetHist().then(setHistData);}} style={bB('rgba(255,255,255,.18)')}>📋</button>}
+          {admin&&<button onClick={()=>setShowVersions(true)}  style={bB('rgba(255,255,255,.18)')}>🕐</button>}
+          {admin&&<button onClick={()=>setShowDashboard(true)} style={bB('rgba(255,255,255,.18)')}>📊</button>}
+          {admin&&<button onClick={()=>setShowNewsEditor(true)} style={bB('rgba(255,255,255,.18)')}>📰</button>}
+          {admin&&<button onClick={()=>setShowBroadcast(true)} style={bB('#e65100')}>📢</button>}
+          {admin&&<button onClick={()=>setShowUsersMgr(true)}  style={bB('#7b1fa2')}>👥</button>}
+          {admin&&<button onClick={()=>setChPwd(true)}         style={bB('rgba(255,255,255,.18)')}>🔑</button>}
+          {admin&&<button onClick={expXLS}                     style={bB('#2e7d32')}>📊</button>}
+          {admin&&<button onClick={expJSON}                    style={bB('rgba(255,255,255,.18)')}>💾</button>}
+          {admin&&<label  style={{...bB('rgba(255,255,255,.18)'),cursor:'pointer'}}>📂<input type="file" accept=".json" onChange={impFile} style={{display:'none'}}/></label>}
+        </div>
+
+        {/* Row 2 — search full width */}
+        <div style={{padding:'0 10px 8px'}}>
+          <div style={{position:'relative'}}>
+            <input value={query} onChange={e=>setQuery(e.target.value)}
+              placeholder="🔍 חיפוש — דגם / מק&quot;ט / שם חלק..."
+              style={{width:'100%',padding:'8px 36px 8px 12px',borderRadius:22,border:'none',fontSize:14,outline:'none',color:'#222',background:'rgba(255,255,255,.93)',boxSizing:'border-box',boxShadow:'0 1px 4px rgba(0,0,0,.15)'}}/>
+            {query&&<button onClick={()=>setQuery('')} style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#888',fontSize:16}}>✕</button>}
           </div>
         </div>
       </header>
-      {/* News Ticker — below header */}
+
+      {/* News Ticker — below header, above content */}
       <NewsTicker items={newsItems}/>
 
-        {/* Notifications — editor + admin */}
-        {editor&&(
-          <button onClick={()=>openNotif()} style={{...bB('rgba(255,255,255,.2)'),position:'relative'}}>
-            🔔{notifCount>0&&<span style={{position:'absolute',top:-4,left:-4,background:'#e53935',color:'#fff',borderRadius:'50%',width:16,height:16,fontSize:10,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold'}}>{notifCount}</span>}
-          </button>
-        )}
-
-        <button onClick={toggleDark} style={bB('rgba(255,255,255,.2)')}>{dark?'☀️':'🌙'}</button>
-        <button onClick={()=>{setLoginRole(null);setSel(null);setSidebar(false);}} style={bB('rgba(255,255,255,.2)')} title="התנתק">⬤ יציאה</button>
-
-        {/* Editor extras */}
-        {editor&&!admin&&<button onClick={()=>setShowNewsEditor(true)} style={bB('#00796b')}>📰 חדשות</button>}
-        {editor&&!admin&&<button onClick={()=>setShowBroadcast(true)} style={bB('#e65100')}>📢 הודעה</button>}
-        {editor&&!admin&&<button onClick={()=>setShowDashboard(true)} style={bB('rgba(255,255,255,.2)')}>📊 דשבורד</button>}
-        {editor&&<button onClick={()=>setShowXls(true)} style={bB('#00796b')}>📥 ייבוא</button>}
-
-        {/* Admin extras */}
-        {admin&&<button onClick={()=>setBrandMgr(true)}       style={bB('rgba(255,255,255,.2)')}>⚙</button>}
-        {admin&&<button onClick={()=>setShowBulkMove(true)}   style={bB('rgba(255,255,255,.2)')}>🔀</button>}
-        {admin&&<button onClick={()=>setShowBulkDel(true)}    style={bB('#b71c1c')}>🗑</button>}
-        {admin&&<button onClick={()=>{setShowHistory(true);fbGetHist().then(setHistData);}} style={bB('rgba(255,255,255,.2)')}>📋</button>}
-        {admin&&<button onClick={()=>setShowVersions(true)}   style={bB('rgba(255,255,255,.2)')}>🕐</button>}
-        {admin&&<button onClick={()=>setShowDashboard(true)}  style={bB('rgba(255,255,255,.2)')}>📊</button>}
-        {admin&&<button onClick={()=>setShowNewsEditor(true)} style={bB('rgba(255,255,255,.2)')}>📰</button>}
-        {admin&&<button onClick={()=>setShowBroadcast(true)}  style={bB('#e65100')}>📢</button>}
-        {admin&&<button onClick={()=>setShowUsersMgr(true)}   style={bB('#6a1b9a')}>👥</button>}
-        {admin&&<button onClick={()=>setChPwd(true)}          style={bB('rgba(255,255,255,.2)')}>🔑</button>}
-        {admin&&<button onClick={expXLS}                      style={bB('#2e7d32')}>📊 Excel</button>}
-        {admin&&<button onClick={expJSON}                     style={bB('rgba(255,255,255,.2)')}>💾</button>}
-        {admin&&<label  style={{...bB('rgba(255,255,255,.2)'),cursor:'pointer'}}>📂<input type="file" accept=".json" onChange={impFile} style={{display:'none'}}/></label>}
-
-      {/* SEARCH DROPDOWN */}
+            {/* SEARCH DROPDOWN */}
       {query&&(
         <div style={{position:'fixed',top:(headerRef.current?.offsetHeight||80)+28+'px',right:0,left:0,zIndex:300,background:'var(--card)',boxShadow:'0 6px 20px rgba(0,0,0,.2)',maxHeight:'55vh',overflowY:'auto',animation:'fadeIn .1s'}}>
           <div style={{padding:'8px 14px',borderBottom:'1px solid var(--border)',color:'var(--sub)',fontSize:12,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
