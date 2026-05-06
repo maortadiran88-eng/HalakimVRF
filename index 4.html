@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMA Scanner — S&P 500</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050a0f;
+  --panel: #0a1520;
+  --border: #0d2535;
+  --green: #00ff88;
+  --red: #ff3355;
+  --amber: #ffb800;
+  --blue: #00aaff;
+  --text: #c8dde8;
+  --muted: #3a5a6a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,170,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.container{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:20px;}
+
+header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 28px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;gap:14px;}
+.logo h1{font-size:38px;font-weight:900;letter-spacing:-1px;color:#fff;line-height:1;}
+.logo .ma{color:var(--blue);text-shadow:0 0 30px rgba(0,170,255,0.6);}
+.logo .tag{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.status-bar{display:flex;align-items:center;gap:10px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);}
+.dot.live{background:var(--green);box-shadow:0 0 20px rgba(0,255,136,0.4);animation:pulse 1.5s ease-in-out infinite;}
+.dot.scanning{background:var(--amber);box-shadow:0 0 12px rgba(255,184,0,0.5);animation:pulse 0.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.2;}}
+.status-text{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;}
+.next-scan{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);}
+
+.controls{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+.btn{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:10px 22px;border:1px solid;cursor:pointer;transition:all 0.15s;background:transparent;}
+.btn-primary{border-color:var(--blue);color:var(--blue);}
+.btn-primary:hover{background:var(--blue);color:var(--bg);box-shadow:0 0 20px rgba(0,170,255,0.3);}
+.btn-primary:disabled{border-color:var(--muted);color:var(--muted);cursor:not-allowed;}
+.btn-stop{border-color:var(--red);color:var(--red);}
+.btn-stop:hover{background:var(--red);color:#fff;}
+.btn-sm{font-size:12px;padding:6px 14px;letter-spacing:1px;}
+
+.input-wrap{display:flex;align-items:center;gap:8px;border:1px solid var(--border);padding:8px 14px;background:var(--panel);}
+.input-wrap label{font-size:13px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.input-wrap input,.input-wrap select{background:transparent;border:none;border-bottom:1px solid var(--blue);color:var(--blue);font-family:'Share Tech Mono',monospace;font-size:17px;outline:none;text-align:center;}
+.input-wrap input{width:60px;}
+.input-wrap select{color:var(--amber);border-bottom-color:var(--amber);cursor:pointer;}
+.input-wrap select option{background:var(--bg);color:var(--text);}
+
+.progress-wrap{margin-bottom:20px;}
+.progress-label{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:4px;display:none;}
+.progress-label.active{display:block;}
+.progress-bar-bg{height:2px;background:var(--border);overflow:hidden;display:none;}
+.progress-bar-bg.active{display:block;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));width:0%;transition:width 0.2s;}
+
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+.stat-card{background:var(--panel);border:1px solid var(--border);padding:14px 16px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat-card.blue::before{background:var(--blue);}
+.stat-card.green::before{background:var(--green);}
+.stat-card.red::before{background:var(--red);}
+.stat-card.amber::before{background:var(--amber);}
+.stat-card.purple::before{background:#cc44ff;}
+.stat-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.stat-value{font-family:'Share Tech Mono',monospace;font-size:28px;font-weight:bold;line-height:1;}
+.stat-card.blue .stat-value{color:var(--blue);}
+.stat-card.green .stat-value{color:var(--green);}
+.stat-card.red .stat-value{color:var(--red);}
+.stat-card.amber .stat-value{color:var(--amber);}
+.stat-card.purple .stat-value{color:#cc44ff;}
+
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.section-title{font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.section-line{flex:1;height:1px;background:var(--border);}
+
+.alerts-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;max-height:280px;overflow-y:auto;}
+.alerts-grid::-webkit-scrollbar{width:3px;}
+.alerts-grid::-webkit-scrollbar-thumb{background:var(--border);}
+.alert-card{display:grid;grid-template-columns:120px 80px 1fr 120px 100px 90px;align-items:center;gap:16px;padding:12px 18px;background:var(--panel);border:1px solid var(--border);animation:slideIn 0.3s ease;position:relative;overflow:hidden;}
+@keyframes slideIn{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:translateX(0);}}
+.alert-card.cross-up{border-left:3px solid var(--green);}
+.alert-card.cross-up::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,255,136,0.06) 0%,transparent 35%);pointer-events:none;}
+.alert-card.cross-down{border-left:3px solid var(--red);}
+.alert-card.cross-down::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,51,85,0.06) 0%,transparent 35%);pointer-events:none;}
+.badge{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:3px 8px;border-radius:2px;white-space:nowrap;}
+.cross-up .badge{background:rgba(0,255,136,0.1);color:var(--green);border:1px solid rgba(0,255,136,0.3);}
+.cross-down .badge{background:rgba(255,51,85,0.1);color:var(--red);border:1px solid rgba(255,51,85,0.3);}
+.alert-sym{font-size:20px;font-weight:900;color:#fff;letter-spacing:1px;}
+.alert-name{font-size:12px;color:var(--muted);}
+.alert-price{font-family:'Share Tech Mono',monospace;font-size:20px;color:#fff;}
+.alert-ma-val{font-family:'Share Tech Mono',monospace;font-size:15px;color:var(--blue);}
+.alert-ma-lbl{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.alert-time{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);}
+.empty-state{padding:32px;text-align:center;color:var(--muted);font-size:13px;letter-spacing:2px;text-transform:uppercase;border:1px dashed var(--border);background:var(--panel);}
+
+.filter-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.filter-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:6px 16px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);transition:all 0.15s;}
+.filter-btn.active{border-color:var(--blue);color:var(--blue);background:rgba(0,170,255,0.08);}
+.search-box{font-family:'Share Tech Mono',monospace;font-size:13px;padding:6px 12px;background:var(--panel);border:1px solid var(--border);color:var(--text);outline:none;width:160px;direction:ltr;}
+.search-box:focus{border-color:var(--blue);}
+.sort-select{font-family:'Barlow Condensed',sans-serif;font-size:13px;padding:6px 10px;background:var(--panel);border:1px solid var(--border);color:var(--muted);outline:none;cursor:pointer;letter-spacing:1px;}
+.sort-select option{background:var(--bg);}
+
+.table-wrap{overflow-x:auto;max-height:520px;overflow-y:auto;}
+.table-wrap::-webkit-scrollbar{width:4px;height:4px;}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--border);}
+table{width:100%;border-collapse:collapse;min-width:700px;}
+thead{position:sticky;top:0;z-index:2;background:var(--bg);}
+thead tr{border-bottom:1px solid var(--border);}
+th{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);padding:9px 12px;text-align:right;font-weight:400;cursor:pointer;white-space:nowrap;user-select:none;}
+th:hover{color:var(--blue);}
+th.sorted{color:var(--blue);}
+tbody tr{border-bottom:1px solid rgba(13,37,53,0.5);transition:background 0.1s;}
+tbody tr:hover{background:rgba(0,170,255,0.03);}
+td{padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:13px;text-align:right;white-space:nowrap;}
+td.sym-cell{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:16px;color:#fff;letter-spacing:1px;}
+td.name-cell{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:400;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;}
+.up{color:var(--green);}
+.dn{color:var(--red);}
+.ma-col{color:var(--blue);}
+.near-badge{font-size:9px;letter-spacing:1px;padding:2px 5px;background:rgba(255,184,0,0.1);color:var(--amber);border:1px solid rgba(255,184,0,0.3);margin-right:4px;}
+.loading-cell{color:var(--muted);font-size:11px;letter-spacing:2px;}
+.error-cell{color:var(--red);font-size:11px;}
+
+.tf-toggle{display:flex;gap:0;}
+.tf-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:8px 18px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);transition:all 0.15s;}
+.tf-btn:first-child{border-radius:0;}
+.tf-btn.active{background:var(--blue);color:var(--bg);border-color:var(--blue);box-shadow:0 0 16px rgba(0,170,255,0.3);}
+.tf-btn:not(.active):hover{border-color:var(--blue);color:var(--blue);}
+.config-panel{background:var(--panel);border:1px solid var(--border);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.config-panel .cfg-label{font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+.config-panel .cfg-val{font-family:'Share Tech Mono',monospace;font-size:20px;color:var(--blue);}
+.config-panel .cfg-sep{width:1px;height:36px;background:var(--border);}
+.preset-row{display:flex;gap:6px;flex-wrap:wrap;}
+.preset-btn{font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 10px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);transition:all 0.12s;letter-spacing:1px;}
+.preset-btn:hover{border-color:var(--blue);color:var(--blue);}
+
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .alert-card{grid-template-columns:auto 1fr auto;}
+  .alert-name,.alert-ma-val,.alert-ma-lbl,.alert-time{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="logo">
+    <div>
+      <h1><span class="ma">SMA</span><span id="headerMa">150</span> <span style="color:var(--muted);font-size:26px">CROSSOVER SCANNER</span></h1>
+      <div class="tag">S&amp;P 500 · 503 Stocks · <span id="headerTf">Daily</span> Chart · Real-Time Crossover Alerts</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-bar">
+      <div class="dot" id="statusDot"></div>
+      <span class="status-text" id="statusText">IDLE — לחץ סריקה להתחלה</span>
+    </div>
+    <div class="next-scan" id="nextScanText"></div>
+  </div>
+</header>
+
+<!-- ── Timeframe + SMA config panel ── -->
+<div class="config-panel">
+
+  <!-- Timeframe toggle -->
+  <div>
+    <div class="cfg-label">גרף</div>
+    <div class="tf-toggle">
+      <button class="tf-btn active" id="tfDaily"  onclick="setTimeframe('daily',this)">יומי</button>
+      <button class="tf-btn"        id="tfWeekly" onclick="setTimeframe('weekly',this)">שבועי</button>
+    </div>
+  </div>
+
+  <div class="cfg-sep"></div>
+
+  <!-- SMA period input -->
+  <div>
+    <div class="cfg-label">תקופת SMA</div>
+    <div style="display:flex;align-items:baseline;gap:6px">
+      <input type="number" id="maInput" value="150" min="2" max="500"
+        style="background:transparent;border:none;border-bottom:2px solid var(--blue);color:var(--blue);font-family:'Share Tech Mono',monospace;font-size:28px;width:72px;outline:none;text-align:center;"
+        oninput="onSettingChange()">
+      <span style="font-size:13px;color:var(--muted);letter-spacing:2px">נרות</span>
+    </div>
+  </div>
+
+  <div class="cfg-sep"></div>
+
+  <!-- Presets -->
+  <div>
+    <div class="cfg-label">פרסטים מהירים</div>
+    <div class="preset-row">
+      <button class="preset-btn" onclick="applyPreset('daily',20)">יומי 20</button>
+      <button class="preset-btn" onclick="applyPreset('daily',50)">יומי 50</button>
+      <button class="preset-btn" onclick="applyPreset('daily',150)">יומי 150</button>
+      <button class="preset-btn" onclick="applyPreset('daily',200)">יומי 200</button>
+      <button class="preset-btn" onclick="applyPreset('weekly',10)">שבועי 10</button>
+      <button class="preset-btn" onclick="applyPreset('weekly',20)">שבועי 20</button>
+      <button class="preset-btn" onclick="applyPreset('weekly',30)">שבועי 30</button>
+      <button class="preset-btn" onclick="applyPreset('weekly',50)">שבועי 50</button>
+    </div>
+  </div>
+
+  <div class="cfg-sep"></div>
+
+  <!-- Current config display -->
+  <div>
+    <div class="cfg-label">הגדרה פעילה</div>
+    <div class="cfg-val" id="activeConfig">יומי · SMA150</div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <div class="input-wrap">
+    <label>רענון</label>
+    <select id="intervalSelect">
+      <option value="120">2 דק׳</option>
+      <option value="300" selected>5 דק׳</option>
+      <option value="600">10 דק׳</option>
+      <option value="900">15 דק׳</option>
+    </select>
+  </div>
+  <div class="input-wrap">
+    <label>קרוב ל-SMA</label>
+    <input type="number" id="nearPct" value="1.5" min="0.1" max="10" step="0.1" style="width:55px">
+    <label style="color:var(--amber)">%</label>
+  </div>
+  <button class="btn btn-primary" id="startBtn" onclick="startScanner()">▶ התחל סריקה</button>
+  <button class="btn btn-stop" id="stopBtn" onclick="stopScanner()" style="display:none">■ עצור</button>
+  <button class="btn btn-primary btn-sm" onclick="clearAlerts()">נקה התראות</button>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label" id="progressLabel"></div>
+  <div class="progress-bar-bg" id="progressBg"><div class="progress-bar" id="progressBar"></div></div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card blue"><div class="stat-label">נסרקו</div><div class="stat-value" id="statTotal">0</div></div>
+  <div class="stat-card green"><div class="stat-label">מעל SMA ↑</div><div class="stat-value" id="statUp">0</div></div>
+  <div class="stat-card red"><div class="stat-label">מתחת SMA ↓</div><div class="stat-value" id="statDown">0</div></div>
+  <div class="stat-card amber"><div class="stat-label">קרוב לSMA ⚡</div><div class="stat-value" id="statNear">0</div></div>
+  <div class="stat-card purple"><div class="stat-label">חציות היום 🔔</div><div class="stat-value" id="statCross">0</div></div>
+</div>
+
+<div class="section-header">
+  <div class="section-title">🔔 התראות חציה</div>
+  <div class="section-line"></div>
+  <span class="status-text" id="alertCount">0 התראות</span>
+</div>
+<div class="alerts-grid" id="alertsContainer">
+  <div class="empty-state">ממתין לסריקה ראשונה...</div>
+</div>
+
+<div class="section-header" style="margin-top:4px">
+  <div class="section-title">📊 כל המניות — S&amp;P 500</div>
+  <div class="section-line"></div>
+  <span class="status-text" id="tableCount"></span>
+</div>
+
+<div class="filter-row">
+  <button class="filter-btn active" onclick="setFilter('all',this)">הכל</button>
+  <button class="filter-btn" onclick="setFilter('above',this)">מעל SMA ↑</button>
+  <button class="filter-btn" onclick="setFilter('below',this)">מתחת SMA ↓</button>
+  <button class="filter-btn" onclick="setFilter('near',this)">קרוב לSMA ⚡</button>
+  <button class="filter-btn" onclick="setFilter('cross',this)">חצו היום 🔔</button>
+  <input class="search-box" type="text" id="searchBox" placeholder="חפש סימול..." oninput="renderTable()" dir="ltr">
+  <select class="sort-select" id="sortSelect" onchange="renderTable()">
+    <option value="sym">סימול</option>
+    <option value="price">מחיר</option>
+    <option value="change">שינוי %</option>
+    <option value="diff">פער מ-SMA</option>
+  </select>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th onclick="setSortCol('sym')">סימול</th>
+        <th>שם</th>
+        <th onclick="setSortCol('price')">מחיר</th>
+        <th onclick="setSortCol('change')">שינוי %</th>
+        <th>SMA<span id="maLabel">150</span></th>        <th onclick="setSortCol('diff')">פער %</th>
+        <th>סטטוס</th>
+        <th>עדכון</th>
+      </tr>
+    </thead>
+    <tbody id="stockTable">
+      <tr><td colspan="8" class="loading-cell" style="text-align:center;padding:28px">לחץ "התחל סריקה" להתחלה</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// S&P 500 FULL LIST (503 symbols)
+// ─────────────────────────────────────────────
+const SP500 = [
+  ["MMM","3M"],["AOS","A.O. Smith"],["ABT","Abbott"],["ABBV","AbbVie"],["ACN","Accenture"],
+  ["ADBE","Adobe"],["AMD","AMD"],["AES","AES Corp"],["AFL","Aflac"],["A","Agilent"],
+  ["APD","Air Products"],["ABNB","Airbnb"],["AKAM","Akamai"],["ALB","Albemarle"],["ARE","Alexandria RE"],
+  ["ALGN","Align Tech"],["ALLE","Allegion"],["LNT","Alliant Energy"],["ALL","Allstate"],["GOOGL","Alphabet A"],
+  ["GOOG","Alphabet C"],["MO","Altria"],["AMZN","Amazon"],["AMCR","Amcor"],["AEE","Ameren"],
+  ["AAL","American Airlines"],["AEP","American Electric"],["AXP","American Express"],["AIG","American Intl"],["AMT","American Tower"],
+  ["AWK","American Water"],["AMP","Ameriprise"],["AME","AMETEK"],["AMGN","Amgen"],["APH","Amphenol"],
+  ["ADI","Analog Devices"],["ANSS","ANSYS"],["AON","Aon"],["APA","APA Corp"],["AAPL","Apple"],
+  ["AMAT","Applied Materials"],["APTV","Aptiv"],["ACGL","Arch Capital"],["ADM","Archer-Daniels"],["ANET","Arista Networks"],
+  ["AJG","Arthur J. Gallagher"],["AIZ","Assurant"],["T","AT&T"],["ATO","Atmos Energy"],["ADSK","Autodesk"],
+  ["ADP","ADP"],["AZO","AutoZone"],["AVB","AvalonBay"],["AVY","Avery Dennison"],["AXON","Axon Enterprise"],
+  ["BKR","Baker Hughes"],["BALL","Ball Corp"],["BAC","Bank of America"],["BK","BNY Mellon"],["BBWI","Bath & Body Works"],
+  ["BAX","Baxter Intl"],["BDX","Becton Dickinson"],["WRB","W.R. Berkley"],["BBY","Best Buy"],["BIO","Bio-Rad"],
+  ["TECH","Bio-Techne"],["BIIB","Biogen"],["BLK","BlackRock"],["BX","Blackstone"],["BA","Boeing"],
+  ["BSX","Boston Scientific"],["BMY","Bristol-Myers"],["AVGO","Broadcom"],["BR","Broadridge"],["BRO","Brown & Brown"],
+  ["BF-B","Brown-Forman B"],["BLDR","Builders FirstSource"],["BG","Bunge"],["BXP","BXP Inc"],["CHRW","C.H. Robinson"],
+  ["CDNS","Cadence Design"],["CZR","Caesars"],["CPT","Camden Property"],["CPB","Campbell Soup"],["COF","Capital One"],
+  ["CAH","Cardinal Health"],["KMX","CarMax"],["CCL","Carnival"],["CARR","Carrier Global"],["CTLT","Catalent"],
+  ["CAT","Caterpillar"],["CBOE","Cboe Global"],["CBRE","CBRE Group"],["CDW","CDW Corp"],["CE","Celanese"],
+  ["COR","Cencora"],["CNC","Centene"],["CNX","CNX Resources"],["CDAY","Ceridian"],["CF","CF Industries"],
+  ["CRL","Charles River"],["SCHW","Charles Schwab"],["CHTR","Charter Comm"],["CVX","Chevron"],["CMG","Chipotle"],
+  ["CB","Chubb"],["CHD","Church & Dwight"],["CI","Cigna"],["CINF","Cincinnati Financial"],["CTAS","Cintas"],
+  ["CSCO","Cisco"],["C","Citigroup"],["CFG","Citizens Financial"],["CLX","Clorox"],["CME","CME Group"],
+  ["CMS","CMS Energy"],["KO","Coca-Cola"],["CTSH","Cognizant"],["CL","Colgate-Palmolive"],["CMCSA","Comcast"],
+  ["CAG","Conagra"],["COP","ConocoPhillips"],["ED","Consolidated Edison"],["STZ","Constellation Brands"],["CEG","Constellation Energy"],
+  ["COO","Cooper Companies"],["CPRT","Copart"],["GLW","Corning"],["CPAY","Corpay"],["CTVA","Corteva"],
+  ["CSGP","CoStar Group"],["COST","Costco"],["CTRA","Coterra Energy"],["CRWD","CrowdStrike"],["CCI","Crown Castle"],
+  ["CSX","CSX Corp"],["CMI","Cummins"],["CVS","CVS Health"],["DHR","Danaher"],["DRI","Darden Restaurants"],
+  ["DVA","DaVita"],["DAY","Dayforce"],["DE","Deere & Co"],["DELL","Dell Tech"],["DAL","Delta Air Lines"],
+  ["DVN","Devon Energy"],["DXCM","Dexcom"],["FANG","Diamondback Energy"],["DLR","Digital Realty"],["DFS","Discover Financial"],
+  ["DG","Dollar General"],["DLTR","Dollar Tree"],["D","Dominion Energy"],["DPZ","Domino's"],["DOV","Dover Corp"],
+  ["DHI","D.R. Horton"],["DTE","DTE Energy"],["DUK","Duke Energy"],["DD","DuPont"],["EMN","Eastman Chemical"],
+  ["ETN","Eaton Corp"],["EBAY","eBay"],["ECL","Ecolab"],["EIX","Edison Intl"],["EW","Edwards Lifesciences"],
+  ["EA","Electronic Arts"],["ELV","Elevance Health"],["LLY","Eli Lilly"],["EMR","Emerson Electric"],["ENPH","Enphase Energy"],
+  ["ETR","Entergy"],["EOG","EOG Resources"],["EPAM","EPAM Systems"],["EQT","EQT Corp"],["EFX","Equifax"],
+  ["EQIX","Equinix"],["EQR","Equity Residential"],["ESS","Essex Property"],["EL","Estee Lauder"],["ETSY","Etsy"],
+  ["EG","Everest Group"],["EVRG","Evergy"],["ES","Eversource"],["EXC","Exelon"],["EXPE","Expedia"],
+  ["EXPD","Expeditors"],["EXR","Extra Space"],["XOM","ExxonMobil"],["FFIV","F5 Inc"],["FDS","FactSet"],
+  ["FICO","Fair Isaac"],["FAST","Fastenal"],["FRT","Federal Realty"],["FDX","FedEx"],["FIS","Fidelity NatInfo"],
+  ["FITB","Fifth Third"],["FSLR","First Solar"],["FE","FirstEnergy"],["FI","Fiserv"],["FMC","FMC Corp"],
+  ["F","Ford Motor"],["FTNT","Fortinet"],["FTV","Fortive"],["FOXA","Fox Corp A"],["FOX","Fox Corp B"],
+  ["BEN","Franklin Resources"],["FCX","Freeport-McMoRan"],["GRMN","Garmin"],["IT","Gartner"],["GE","GE Aerospace"],
+  ["GEHC","GE HealthCare"],["GEV","GE Vernova"],["GEN","Gen Digital"],["GNRC","Generac"],["GD","General Dynamics"],
+  ["GIS","General Mills"],["GM","General Motors"],["GPC","Genuine Parts"],["GILD","Gilead Sciences"],["GS","Goldman Sachs"],
+  ["HAL","Halliburton"],["HIG","Hartford Financial"],["HAS","Hasbro"],["HCA","HCA Healthcare"],["DOC","Healthpeak"],
+  ["HSIC","Henry Schein"],["HSY","Hershey"],["HES","Hess Corp"],["HPE","HP Enterprise"],["HLT","Hilton"],
+  ["HOLX","Hologic"],["HD","Home Depot"],["HON","Honeywell"],["HRL","Hormel Foods"],["HST","Host Hotels"],
+  ["HWM","Howmet Aerospace"],["HPQ","HP Inc"],["HUBB","Hubbell"],["HUM","Humana"],["HBAN","Huntington Bancshares"],
+  ["HII","Huntington Ingalls"],["IBM","IBM"],["IEX","IDEX Corp"],["IDXX","IDEXX Labs"],["ITW","Illinois Tool"],
+  ["INCY","Incyte"],["IR","Ingersoll Rand"],["PODD","Insulet"],["INTC","Intel"],["ICE","Intercontinental Exchange"],
+  ["IFF","Intl Flavors"],["IP","International Paper"],["IPG","Interpublic"],["INTU","Intuit"],["ISRG","Intuitive Surgical"],
+  ["IVZ","Invesco"],["INVH","Invitation Homes"],["IQV","IQVIA"],["IRM","Iron Mountain"],["JBHT","J.B. Hunt"],
+  ["JBL","Jabil"],["JKHY","Jack Henry"],["J","Jacobs Solutions"],["JNJ","Johnson & Johnson"],["JCI","Johnson Controls"],
+  ["JPM","JPMorgan Chase"],["JNPR","Juniper Networks"],["K","Kellanova"],["KVUE","Kenvue"],["KDP","Keurig Dr Pepper"],
+  ["KEY","KeyCorp"],["KEYS","Keysight"],["KMB","Kimberly-Clark"],["KIM","Kimco Realty"],["KMI","Kinder Morgan"],
+  ["KLAC","KLA Corp"],["KHC","Kraft Heinz"],["KR","Kroger"],["LHX","L3Harris"],["LH","Labcorp"],
+  ["LRCX","Lam Research"],["LW","Lamb Weston"],["LVS","Las Vegas Sands"],["LDOS","Leidos"],["LEN","Lennar"],
+  ["LII","Lennox"],["LYV","Live Nation"],["LKQ","LKQ Corp"],["LMT","Lockheed Martin"],["L","Loews"],
+  ["LOW","Lowe's"],["LULU","lululemon"],["LYB","LyondellBasell"],["MTB","M&T Bank"],["MRO","Marathon Oil"],
+  ["MPC","Marathon Petroleum"],["MKTX","MarketAxess"],["MAR","Marriott"],["MMC","Marsh McLennan"],["MLM","Martin Marietta"],
+  ["MAS","Masco"],["MA","Mastercard"],["MTCH","Match Group"],["MKC","McCormick"],["MCD","McDonald's"],
+  ["MCK","McKesson"],["MDT","Medtronic"],["MRK","Merck"],["META","Meta Platforms"],["MET","MetLife"],
+  ["MTD","Mettler-Toledo"],["MGM","MGM Resorts"],["MCHP","Microchip Tech"],["MU","Micron Tech"],["MSFT","Microsoft"],
+  ["MAA","Mid-America Apt"],["MRNA","Moderna"],["MHK","Mohawk Industries"],["MOH","Molina Healthcare"],["TAP","Molson Coors"],
+  ["MDLZ","Mondelez"],["MPWR","Monolithic Power"],["MNST","Monster Beverage"],["MCO","Moody's"],["MS","Morgan Stanley"],
+  ["MOS","Mosaic"],["MSI","Motorola Solutions"],["MSCI","MSCI Inc"],["NDAQ","Nasdaq"],["NTAP","NetApp"],
+  ["NFLX","Netflix"],["NEM","Newmont"],["NWSA","News Corp A"],["NWS","News Corp B"],["NEE","NextEra Energy"],
+  ["NKE","Nike"],["NI","NiSource"],["NDSN","Nordson"],["NSC","Norfolk Southern"],["NTRS","Northern Trust"],
+  ["NOC","Northrop Grumman"],["NCLH","Norwegian Cruise"],["NRG","NRG Energy"],["NUE","Nucor"],["NVDA","NVIDIA"],
+  ["NVR","NVR Inc"],["NXPI","NXP Semi"],["ORLY","O'Reilly Auto"],["OXY","Occidental"],["ODFL","Old Dominion"],
+  ["OMC","Omnicom"],["ON","ON Semi"],["OKE","ONEOK"],["ORCL","Oracle"],["OTIS","Otis Worldwide"],
+  ["PCAR","PACCAR"],["PKG","Packaging Corp"],["PLTR","Palantir"],["PANW","Palo Alto Networks"],["PARA","Paramount"],
+  ["PH","Parker Hannifin"],["PAYX","Paychex"],["PAYC","Paycom"],["PYPL","PayPal"],["PNR","Pentair"],
+  ["PEP","PepsiCo"],["PFE","Pfizer"],["PCG","PG&E"],["PM","Philip Morris"],["PSX","Phillips 66"],
+  ["PNW","Pinnacle West"],["PNC","PNC Financial"],["POOL","Pool Corp"],["PPG","PPG Industries"],["PPL","PPL Corp"],
+  ["PFG","Principal Financial"],["PG","Procter & Gamble"],["PGR","Progressive"],["PLD","Prologis"],["PRU","Prudential"],
+  ["PEG","PSEG"],["PTC","PTC Inc"],["PSA","Public Storage"],["PHM","PulteGroup"],["QRVO","Qorvo"],
+  ["PWR","Quanta Services"],["QCOM","Qualcomm"],["DGX","Quest Diagnostics"],["RL","Ralph Lauren"],["RJF","Raymond James"],
+  ["RTX","RTX Corp"],["O","Realty Income"],["REG","Regency Centers"],["REGN","Regeneron"],["RF","Regions Financial"],
+  ["RSG","Republic Services"],["RMD","ResMed"],["RVTY","Revvity"],["ROK","Rockwell Auto"],["ROL","Rollins"],
+  ["ROP","Roper Tech"],["ROST","Ross Stores"],["RCL","Royal Caribbean"],["SPGI","S&P Global"],["CRM","Salesforce"],
+  ["SBAC","SBA Comm"],["SLB","SLB"],["STX","Seagate"],["SRE","Sempra"],["NOW","ServiceNow"],
+  ["SHW","Sherwin-Williams"],["SPG","Simon Property"],["SWKS","Skyworks"],["SJM","J.M. Smucker"],["SNA","Snap-on"],
+  ["SOLV","Solventum"],["SO","Southern Company"],["LUV","Southwest Air"],["SWK","Stanley Black & Decker"],["SBUX","Starbucks"],
+  ["STT","State Street"],["STLD","Steel Dynamics"],["STE","STERIS"],["SYK","Stryker"],["SMCI","Super Micro"],
+  ["SYF","Synchrony"],["SNPS","Synopsys"],["SYY","Sysco"],["TMUS","T-Mobile"],["TROW","T. Rowe Price"],
+  ["TTWO","Take-Two"],["TPR","Tapestry"],["TRGP","Targa Resources"],["TGT","Target"],["TEL","TE Connectivity"],
+  ["TDY","Teledyne"],["TFX","Teleflex"],["TER","Teradyne"],["TSLA","Tesla"],["TXN","Texas Instruments"],
+  ["TXT","Textron"],["TMO","Thermo Fisher"],["TJX","TJX Companies"],["TSCO","Tractor Supply"],["TT","Trane Technologies"],
+  ["TDG","TransDigm"],["TRV","Travelers"],["TRMB","Trimble"],["TFC","Truist Financial"],["TYL","Tyler Tech"],
+  ["TSN","Tyson Foods"],["USB","U.S. Bancorp"],["UBER","Uber"],["UDR","UDR Inc"],["ULTA","Ulta Beauty"],
+  ["UNP","Union Pacific"],["UAL","United Airlines"],["UPS","UPS"],["URI","United Rentals"],["UNH","UnitedHealth"],
+  ["UHS","Universal Health"],["VLO","Valero Energy"],["VTR","Ventas"],["VRSN","VeriSign"],["VRSK","Verisk"],
+  ["VZ","Verizon"],["VRTX","Vertex Pharma"],["VTRS","Viatris"],["VICI","VICI Properties"],["V","Visa"],
+  ["VST","Vistra Corp"],["VFC","VF Corp"],["VNO","Vornado Realty"],["WRK","WestRock"],["WAB","Wabtec"],
+  ["WBA","Walgreens"],["WMT","Walmart"],["DIS","Walt Disney"],["WBD","Warner Bros Discovery"],["WM","Waste Management"],
+  ["WAT","Waters Corp"],["WEC","WEC Energy"],["WFC","Wells Fargo"],["WELL","Welltower"],["WST","West Pharma"],
+  ["WDC","Western Digital"],["WHR","Whirlpool"],["WTW","Willis Towers Watson"],["WY","Weyerhaeuser"],["WYNN","Wynn Resorts"],
+  ["XEL","Xcel Energy"],["XYL","Xylem"],["YUM","Yum! Brands"],["ZBRA","Zebra Tech"],["ZBH","Zimmer Biomet"],["ZTS","Zoetis"]
+];
+
+// ─────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────
+let scanRunning = false;
+let scanTimer = null;
+let countdownTimer = null;
+let prevData = {};      // {sym: {price, ma}}
+let stockData = {};     // {sym: {sym, name, price, changePct, ma, updatedAt, crossToday}}
+let alerts = [];
+let currentFilter = 'all';
+let sortCol = 'sym';
+let sortAsc = true;
+let currentTimeframe = 'daily'; // 'daily' | 'weekly'
+
+// ─────────────────────────────────────────────
+// Utils
+// ─────────────────────────────────────────────
+function getMaPeriod() { return parseInt(document.getElementById('maInput').value) || 150; }
+function getInterval() { return parseInt(document.getElementById('intervalSelect').value) || 300; }
+function getNearPct() { return parseFloat(document.getElementById('nearPct').value) || 1.5; }
+function getTimeframe() { return currentTimeframe; }
+
+function fmtPrice(p) { return p != null ? '$' + p.toFixed(2) : '—'; }
+function fmtPct(p)   { return p != null ? (p >= 0 ? '+' : '') + p.toFixed(2) + '%' : '—'; }
+function fmtTime()   { return new Date().toLocaleTimeString('he-IL'); }
+
+// ─────────────────────────────────────────────
+// Timeframe & preset controls
+// ─────────────────────────────────────────────
+function setTimeframe(tf, btn) {
+  currentTimeframe = tf;
+  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateConfigDisplay();
+}
+
+function applyPreset(tf, period) {
+  currentTimeframe = tf;
+  document.getElementById('maInput').value = period;
+  document.getElementById('tfDaily').classList.toggle('active', tf === 'daily');
+  document.getElementById('tfWeekly').classList.toggle('active', tf === 'weekly');
+  updateConfigDisplay();
+  // Reset data so next scan uses new settings
+  if (scanRunning) { stockData = {}; prevData = {}; }
+}
+
+function onSettingChange() {
+  updateConfigDisplay();
+  if (scanRunning) { stockData = {}; prevData = {}; }
+}
+
+function updateConfigDisplay() {
+  const mp  = getMaPeriod();
+  const tf  = currentTimeframe === 'daily' ? 'יומי' : 'שבועי';
+  const tfEn = currentTimeframe === 'daily' ? 'Daily' : 'Weekly';
+  document.getElementById('activeConfig').textContent = `${tf} · SMA${mp}`;
+  document.getElementById('headerMa').textContent = mp;
+  document.getElementById('headerTf').textContent = tfEn;
+  document.getElementById('maLabel').textContent = mp;
+}
+
+// ─────────────────────────────────────────────
+// Fetch single stock via Yahoo Finance
+// Uses allorigins CORS proxy (free, no key)
+// ─────────────────────────────────────────────
+async function fetchStock(sym, name) {
+  const encoded  = encodeURIComponent(sym);
+  const tf       = getTimeframe();
+  const maPeriod = getMaPeriod();
+
+  // For weekly: fetch 5 years of daily data, then resample to weekly candles
+  // For daily:  fetch enough history to cover the SMA period (max 2y for safety)
+  const interval = tf === 'weekly' ? '1wk' : '1d';
+  const range    = tf === 'weekly'
+    ? `${Math.ceil(maPeriod / 52 * 5 + 1)}y`.replace(/^[0-9]+/, n => Math.min(Math.max(parseInt(n), 2), 10))
+    : (maPeriod > 200 ? '2y' : '1y');
+
+  const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encoded}?interval=${interval}&range=${range}`;
+  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`;
+
+  const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(14000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+
+  const result = json?.chart?.result?.[0];
+  if (!result) throw new Error('No data');
+
+  const meta   = result.meta;
+  const closes = result.indicators?.quote?.[0]?.close ?? [];
+
+  const price     = meta.regularMarketPrice;
+  const prevClose = meta.chartPreviousClose ?? meta.previousClose;
+  const changePct = prevClose ? ((price - prevClose) / prevClose) * 100 : 0;
+
+  // Compute SMA from the candle closes
+  const valid = closes.filter(c => c != null && c > 0);
+  const slice = valid.slice(-maPeriod);
+  const ma    = slice.length >= Math.min(maPeriod, 5)
+    ? slice.reduce((a, b) => a + b, 0) / slice.length
+    : null;
+
+  return { sym, name, price, changePct, ma, tf, maPeriod };
+}
+
+// ─────────────────────────────────────────────
+// Crossover detection
+// ─────────────────────────────────────────────
+function detectCross(sym, newPrice, newMa) {
+  const prev = prevData[sym];
+  if (!prev || !newMa || !prev.ma) return null;
+  if (prev.price < prev.ma && newPrice >= newMa) return 'cross-up';
+  if (prev.price > prev.ma && newPrice <= newMa) return 'cross-down';
+  return null;
+}
+
+// ─────────────────────────────────────────────
+// Sound alert
+// ─────────────────────────────────────────────
+function playBeep(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.15].forEach(offset => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = type === 'cross-up' ? 880 : 440;
+      osc.type = 'sine';
+      const t = ctx.currentTime + offset;
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc.start(t); osc.stop(t + 0.3);
+    });
+  } catch(e) {}
+}
+
+// ─────────────────────────────────────────────
+// Add alert
+// ─────────────────────────────────────────────
+function addAlert(sym, name, price, ma, type) {
+  const tf  = getTimeframe() === 'daily' ? 'יומי' : 'שבועי';
+  const mp  = getMaPeriod();
+  alerts.unshift({ sym, name, price, ma, type, time: fmtTime(), tf, mp });
+  if (alerts.length > 100) alerts.pop();
+  document.getElementById('statCross').textContent = alerts.length;
+  document.getElementById('alertCount').textContent = `${alerts.length} התראות`;
+  renderAlerts();
+  playBeep(type);
+
+  // Browser notification if allowed
+  if (Notification.permission === 'granted') {
+    new Notification(`SMA${mp} (${tf}) חציה: ${sym}`, {
+      body: `${type === 'cross-up' ? '▲ חצה מעלה' : '▼ חצה מטה'} | מחיר: $${price.toFixed(2)} | SMA: $${ma.toFixed(2)}`,
+      icon: 'https://em-content.zobj.net/source/google/387/bell_1f514.png'
+    });
+  }
+}
+
+// ─────────────────────────────────────────────
+// Render alerts panel
+// ─────────────────────────────────────────────
+function renderAlerts() {
+  const c = document.getElementById('alertsContainer');
+  if (!alerts.length) {
+    c.innerHTML = '<div class="empty-state">אין חציות עדיין — הסריקה פעילה</div>';
+    return;
+  }
+  c.innerHTML = alerts.map(a => `
+    <div class="alert-card ${a.type}">
+      <span class="badge">${a.type === 'cross-up' ? '▲ חצה מעלה' : '▼ חצה מטה'}</span>
+      <span class="alert-sym">${a.sym}</span>
+      <span class="alert-name">${a.name}</span>
+      <span class="alert-price">${fmtPrice(a.price)}</span>
+      <div>
+        <div class="alert-ma-lbl">${a.tf === 'שבועי' ? 'שבועי' : 'יומי'} SMA${a.mp}</div>
+        <div class="alert-ma-val">${fmtPrice(a.ma)}</div>
+      </div>
+      <span class="alert-time">${a.time}</span>
+    </div>`).join('');
+}
+
+// ─────────────────────────────────────────────
+// Render table
+// ─────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function setSortCol(col) {
+  if (sortCol === col) sortAsc = !sortAsc;
+  else { sortCol = col; sortAsc = true; }
+  renderTable();
+}
+
+function renderTable() {
+  const mp      = getMaPeriod();
+  const nearPct = getNearPct();
+  const search  = document.getElementById('searchBox').value.toUpperCase().trim();
+  document.getElementById('maLabel').textContent = mp;
+
+  let rows = Object.values(stockData);
+
+  // search
+  if (search) rows = rows.filter(d => d.sym.includes(search) || d.name.toUpperCase().includes(search));
+
+  // filter
+  rows = rows.filter(d => {
+    if (!d.ma) return currentFilter === 'all';
+    const diff = ((d.price - d.ma) / d.ma) * 100;
+    const near = Math.abs(diff) <= nearPct;
+    if (currentFilter === 'above') return d.price >= d.ma;
+    if (currentFilter === 'below') return d.price < d.ma;
+    if (currentFilter === 'near')  return near;
+    if (currentFilter === 'cross') return d.crossToday;
+    return true;
+  });
+
+  // sort
+  rows.sort((a, b) => {
+    let va, vb;
+    if (sortCol === 'price')  { va = a.price ?? 0; vb = b.price ?? 0; }
+    else if (sortCol === 'change') { va = a.changePct ?? 0; vb = b.changePct ?? 0; }
+    else if (sortCol === 'diff')   {
+      va = (a.ma && a.price) ? ((a.price - a.ma) / a.ma) * 100 : -9999;
+      vb = (b.ma && b.price) ? ((b.price - b.ma) / b.ma) * 100 : -9999;
+    } else { va = a.sym; vb = b.sym; }
+    if (typeof va === 'string') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return sortAsc ? va - vb : vb - va;
+  });
+
+  document.getElementById('tableCount').textContent = `${rows.length} מניות`;
+
+  // stats
+  let upCnt=0, dnCnt=0, nearCnt=0;
+  Object.values(stockData).forEach(d => {
+    if (!d.ma) return;
+    const diff = Math.abs(((d.price - d.ma) / d.ma) * 100);
+    if (d.price >= d.ma) upCnt++; else dnCnt++;
+    if (diff <= nearPct) nearCnt++;
+  });
+  document.getElementById('statTotal').textContent = Object.keys(stockData).length;
+  document.getElementById('statUp').textContent = upCnt;
+  document.getElementById('statDown').textContent = dnCnt;
+  document.getElementById('statNear').textContent = nearCnt;
+
+  if (!rows.length) {
+    document.getElementById('stockTable').innerHTML =
+      `<tr><td colspan="8" class="loading-cell" style="text-align:center;padding:28px">אין תוצאות</td></tr>`;
+    return;
+  }
+
+  document.getElementById('stockTable').innerHTML = rows.map(d => {
+    const changeCls = d.changePct >= 0 ? 'up' : 'dn';
+    let maCell='—', diffCell='—', statusCell='—';
+    if (d.ma) {
+      const diff    = ((d.price - d.ma) / d.ma) * 100;
+      const diffCls = diff >= 0 ? 'up' : 'dn';
+      const near    = Math.abs(diff) <= nearPct;
+      maCell   = `<span class="ma-col">${fmtPrice(d.ma)}</span>`;
+      diffCell = `<span class="${diffCls}">${fmtPct(diff)}</span>`;
+      const nearTag = near ? `<span class="near-badge">קרוב!</span>` : '';
+      if (d.price >= d.ma) statusCell = `${nearTag}<span class="up">▲ מעל</span>`;
+      else                  statusCell = `${nearTag}<span class="dn">▼ מתחת</span>`;
+      if (d.crossToday) statusCell += ` <span style="color:var(--amber)">🔔</span>`;
+    }
+    return `<tr>
+      <td class="sym-cell">${d.sym}</td>
+      <td class="name-cell">${d.name}</td>
+      <td>${fmtPrice(d.price)}</td>
+      <td class="${changeCls}">${fmtPct(d.changePct)}</td>
+      <td>${maCell}</td>
+      <td>${diffCell}</td>
+      <td>${statusCell}</td>
+      <td style="color:var(--muted);font-size:11px">${d.updatedAt || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+// Main scan loop
+// ─────────────────────────────────────────────
+async function runScan() {
+  const dot      = document.getElementById('statusDot');
+  const statusEl = document.getElementById('statusText');
+  const label    = document.getElementById('progressLabel');
+  const bgEl     = document.getElementById('progressBg');
+  const bar      = document.getElementById('progressBar');
+
+  dot.className = 'dot scanning';
+  label.classList.add('active');
+  bgEl.classList.add('active');
+
+  const total = SP500.length;
+  let done = 0;
+
+  for (const [sym, name] of SP500) {
+    if (!scanRunning) break;
+
+    label.textContent = `סורק ${done + 1}/${total}: ${sym}`;
+    bar.style.width   = `${((done + 1) / total) * 100}%`;
+
+    try {
+      const d     = await fetchStock(sym, name);
+      const cross = detectCross(sym, d.price, d.ma);
+      if (cross) {
+        addAlert(sym, name, d.price, d.ma, cross);
+        if (stockData[sym]) stockData[sym].crossToday = true;
+      }
+      prevData[sym] = { price: d.price, ma: d.ma };
+      stockData[sym] = {
+        ...d,
+        crossToday: stockData[sym]?.crossToday || !!cross,
+        updatedAt: fmtTime()
+      };
+    } catch (e) {
+      // keep existing data, mark error
+      if (!stockData[sym]) stockData[sym] = { sym, name, price: null, changePct: null, ma: null, updatedAt: 'שגיאה', crossToday: false };
+    }
+
+    done++;
+    // Render every 10 stocks to avoid thrashing
+    if (done % 10 === 0 || done === total) renderTable();
+
+    // Small delay to avoid rate limiting
+    await sleep(400);
+  }
+
+  label.classList.remove('active');
+  bgEl.classList.remove('active');
+  bar.style.width = '0%';
+  dot.className = 'dot live';
+  statusEl.textContent = `סריקה הושלמה · ${fmtTime()} · ${done} מניות · ${currentTimeframe === 'daily' ? 'יומי' : 'שבועי'} SMA${getMaPeriod()}`;
+  renderTable();
+
+  if (scanRunning) startCountdown();
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ─────────────────────────────────────────────
+// Countdown to next scan
+// ─────────────────────────────────────────────
+function startCountdown() {
+  clearInterval(countdownTimer);
+  let remaining = getInterval();
+  const el = document.getElementById('nextScanText');
+  countdownTimer = setInterval(() => {
+    remaining--;
+    el.textContent = `סריקה הבאה בעוד ${remaining} שנ׳`;
+    if (remaining <= 0) {
+      clearInterval(countdownTimer);
+      el.textContent = '';
+      if (scanRunning) runScan();
+    }
+  }, 1000);
+}
+
+// ─────────────────────────────────────────────
+// Controls
+// ─────────────────────────────────────────────
+function startScanner() {
+  // Request notification permission
+  if (Notification.permission === 'default') Notification.requestPermission();
+
+  scanRunning = true;
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('stopBtn').style.display  = 'inline-block';
+
+  // Reset all data (new scan with current settings)
+  stockData = {};
+  prevData  = {};
+  Object.values(stockData).forEach(d => { d.crossToday = false; });
+
+  document.getElementById('statusText').textContent = `מתחיל סריקה · ${currentTimeframe === 'daily' ? 'יומי' : 'שבועי'} SMA${getMaPeriod()}...`;
+  updateConfigDisplay();
+  runScan();
+}
+
+function stopScanner() {
+  scanRunning = false;
+  clearInterval(countdownTimer);
+  document.getElementById('startBtn').style.display = 'inline-block';
+  document.getElementById('stopBtn').style.display  = 'none';
+  document.getElementById('statusDot').className    = 'dot';
+  document.getElementById('statusText').textContent = 'עצור';
+  document.getElementById('nextScanText').textContent = '';
+  document.getElementById('progressLabel').classList.remove('active');
+  document.getElementById('progressBg').classList.remove('active');
+}
+
+function clearAlerts() {
+  alerts = [];
+  document.getElementById('statCross').textContent = '0';
+  document.getElementById('alertCount').textContent = '0 התראות';
+  Object.values(stockData).forEach(d => { d.crossToday = false; });
+  renderAlerts();
+  renderTable();
+}
+
+// Init on page load
+updateConfigDisplay();
+</script>
+</body>
+</html>
