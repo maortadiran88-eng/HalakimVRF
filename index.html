@@ -16,24 +16,7 @@
   --blue: #00aaff;
   --text: #c8dde8;
   --muted: #3a5a6a;
-  --grid: rgba(0,170,255,0.03);
 }
-body.light {
-  --bg: #f0f4f8;
-  --panel: #ffffff;
-  --border: #d0dce8;
-  --green: #00a854;
-  --red: #e8003a;
-  --amber: #d48000;
-  --blue: #0077cc;
-  --text: #1a2a3a;
-  --muted: #7a9ab0;
-  --grid: rgba(0,100,200,0.04);
-}
-body.light .logo h1 { color: #1a2a3a; }
-body.light .logo .ma { color: var(--blue); text-shadow: none; }
-body.light thead { background: var(--bg); }
-body.light::before { display: none; }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,170,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
@@ -144,48 +127,7 @@ td.name-cell{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weigh
 .loading-cell{color:var(--muted);font-size:11px;letter-spacing:2px;}
 .error-cell{color:var(--red);font-size:11px;}
 
-/* Theme toggle */
-.theme-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;padding:6px 14px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);transition:all 0.2s;}
-.theme-btn:hover{border-color:var(--blue);color:var(--blue);}
-
-/* Volume bar */
-.vol-bar-wrap{display:flex;align-items:center;gap:4px;min-width:80px;}
-.vol-bar-bg{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
-.vol-bar{height:100%;border-radius:3px;transition:width 0.3s;}
-.vol-bar.high{background:var(--green);}
-.vol-bar.normal{background:var(--blue);}
-.vol-bar.low{background:var(--muted);}
-.vol-label{font-family:'Share Tech Mono',monospace;font-size:10px;white-space:nowrap;}
-.vol-label.high{color:var(--green);}
-.vol-label.normal{color:var(--muted);}
-
-/* Last session toast */
-.session-toast{position:fixed;bottom:24px;left:24px;background:var(--panel);border:1px solid var(--blue);padding:14px 20px;max-width:340px;z-index:999;animation:slideUp 0.4s ease;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
-@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-.session-toast h4{font-size:13px;letter-spacing:2px;color:var(--blue);margin-bottom:8px;text-transform:uppercase;}
-.session-toast p{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text);line-height:1.7;}
-.session-toast .toast-btns{display:flex;gap:8px;margin-top:12px;}
-.session-toast .toast-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;padding:5px 14px;border:1px solid;cursor:pointer;background:transparent;transition:all 0.15s;text-transform:uppercase;}
-.toast-btn.restore{border-color:var(--green);color:var(--green);}
-.toast-btn.restore:hover{background:var(--green);color:var(--bg);}
-.toast-btn.dismiss{border-color:var(--muted);color:var(--muted);}
-.toast-btn.dismiss:hover{border-color:var(--red);color:var(--red);}
-
-/* Sound toggle */
-.sound-btn{font-family:'Share Tech Mono',monospace;font-size:12px;padding:6px 12px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);transition:all 0.15s;}
-.sound-btn.on{color:var(--green);border-color:rgba(0,255,136,0.4);}
-.sound-btn:hover{border-color:var(--blue);}
-
-.universe-panel{background:var(--panel);border:1px solid var(--border);padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
-.universe-panel .cfg-label{font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
-.univ-grid{display:flex;gap:8px;flex-wrap:wrap;}
-.univ-btn{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;padding:8px 16px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);transition:all 0.15s;position:relative;}
-.univ-btn:hover{border-color:var(--blue);color:var(--blue);}
-.univ-btn.active-sp{border-color:#ff9500;color:#ff9500;background:rgba(255,149,0,0.08);box-shadow:0 0 12px rgba(255,149,0,0.2);}
-.univ-btn.active-nq{border-color:#a855f7;color:#a855f7;background:rgba(168,85,247,0.08);box-shadow:0 0 12px rgba(168,85,247,0.2);}
-.univ-count{font-family:'Share Tech Mono',monospace;font-size:10px;position:absolute;top:-6px;right:-6px;background:var(--bg);border:1px solid var(--border);padding:1px 5px;color:var(--muted);}
-.univ-info{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--blue);padding:6px 12px;border:1px solid var(--border);background:rgba(0,170,255,0.04);}
-
+.tf-toggle{display:flex;gap:0;}
 .tf-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:8px 18px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);transition:all 0.15s;}
 .tf-btn:first-child{border-radius:0;}
 .tf-btn.active{background:var(--blue);color:var(--bg);border-color:var(--blue);box-shadow:0 0 16px rgba(0,170,255,0.3);}
@@ -198,7 +140,6 @@ td.name-cell{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weigh
 .preset-btn{font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 10px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);transition:all 0.12s;letter-spacing:1px;}
 .preset-btn:hover{border-color:var(--blue);color:var(--blue);}
 
-@media(max-width:900px){
   .stats-row{grid-template-columns:repeat(2,1fr);}
   .alert-card{grid-template-columns:auto 1fr auto;}
   .alert-name,.alert-ma-val,.alert-ma-lbl,.alert-time{display:none;}
@@ -217,44 +158,12 @@ td.name-cell{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weigh
   </div>
   <div class="header-right">
     <div class="status-bar">
-      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="החלף מצב כהה/בהיר">🌙 כהה</button>
-      <button class="sound-btn on" id="soundBtn" onclick="toggleSound()">🔔 קול</button>
-      <button class="sound-btn" onclick="openHelp()" style="color:var(--blue);border-color:rgba(0,170,255,0.3)">❓ מדריך</button>
       <div class="dot" id="statusDot"></div>
       <span class="status-text" id="statusText">IDLE — לחץ סריקה להתחלה</span>
     </div>
     <div class="next-scan" id="nextScanText"></div>
   </div>
 </header>
-
-<!-- ── Universe selector ── -->
-<div class="universe-panel">
-  <div>
-    <div class="cfg-label">מה לסרוק</div>
-    <div class="univ-grid">
-      <button class="univ-btn" id="uSP500" onclick="setUniverse('SP500',this)">
-        <span class="univ-count">503</span>S&amp;P 500 מלא
-      </button>
-      <button class="univ-btn" id="uSP100" onclick="setUniverse('SP100',this)">
-        <span class="univ-count">100</span>S&amp;P 100
-      </button>
-      <button class="univ-btn" id="uSP50" onclick="setUniverse('SP50',this)">
-        <span class="univ-count">50</span>S&amp;P 50 גדולות
-      </button>
-      <button class="univ-btn" id="uNQ100" onclick="setUniverse('NQ100',this)">
-        <span class="univ-count">100</span>נאסד"ק 100
-      </button>
-      <button class="univ-btn" id="uNQ50" onclick="setUniverse('NQ50',this)">
-        <span class="univ-count">50</span>נאסד"ק 50 גדולות
-      </button>
-    </div>
-  </div>
-  <div class="cfg-sep"></div>
-  <div>
-    <div class="cfg-label">אוניברס פעיל</div>
-    <div class="univ-info" id="univInfo">— לא נבחר —</div>
-  </div>
-</div>
 
 <!-- ── Timeframe + SMA config panel ── -->
 <div class="config-panel">
@@ -362,7 +271,6 @@ td.name-cell{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weigh
   <button class="filter-btn" onclick="setFilter('below',this)">מתחת SMA ↓</button>
   <button class="filter-btn" onclick="setFilter('near',this)">קרוב לSMA ⚡</button>
   <button class="filter-btn" onclick="setFilter('cross',this)">חצו היום 🔔</button>
-  <button class="filter-btn" onclick="setFilter('buy',this)" style="border-color:rgba(0,255,136,0.3);color:var(--green)">🟢 סיגנל קנייה</button>
   <input class="search-box" type="text" id="searchBox" placeholder="חפש סימול..." oninput="renderTable()" dir="ltr">
   <select class="sort-select" id="sortSelect" onchange="renderTable()">
     <option value="sym">סימול</option>
@@ -380,163 +288,17 @@ td.name-cell{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weigh
         <th>שם</th>
         <th onclick="setSortCol('price')">מחיר</th>
         <th onclick="setSortCol('change')">שינוי %</th>
-        <th>SMA<span id="maLabel">150</span></th>
-        <th onclick="setSortCol('diff')">פער %</th>
-        <th>כיוון SMA</th>
-        <th onclick="setSortCol('vol')">נפח מסחר</th>
+        <th>SMA<span id="maLabel">150</span></th>        <th onclick="setSortCol('diff')">פער %</th>
         <th>סטטוס</th>
         <th>עדכון</th>
       </tr>
     </thead>
     <tbody id="stockTable">
-      <tr><td colspan="10" class="loading-cell" style="text-align:center;padding:28px">בחר אינדקס ולחץ "התחל סריקה"</td></tr>
+      <tr><td colspan="8" class="loading-cell" style="text-align:center;padding:28px">לחץ "התחל סריקה" להתחלה</td></tr>
     </tbody>
   </table>
 </div>
 
-</div>
-
-<!-- ── Help Modal ── -->
-<div id="helpOverlay" onclick="closeHelp()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;backdrop-filter:blur(4px)"></div>
-<div id="helpModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;width:min(680px,95vw);max-height:88vh;overflow-y:auto;background:var(--panel);border:1px solid var(--blue);box-shadow:0 0 60px rgba(0,170,255,0.25)">
-
-  <div style="padding:22px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--panel);z-index:2">
-    <div>
-      <div style="font-size:10px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;margin-bottom:3px">מדריך מובנה</div>
-      <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px">איך עובד סיגנל הקנייה?</div>
-    </div>
-    <button onclick="closeHelp()" style="font-size:20px;background:none;border:1px solid var(--border);color:var(--muted);cursor:pointer;padding:4px 12px;line-height:1;transition:all 0.15s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕</button>
-  </div>
-
-  <div style="padding:24px 28px;display:flex;flex-direction:column;gap:20px;font-family:'Barlow Condensed',sans-serif">
-
-    <!-- 3 conditions -->
-    <div>
-      <div style="font-size:10px;letter-spacing:3px;color:var(--green);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px">
-        <div style="flex:1;height:1px;background:rgba(0,255,136,0.2)"></div>
-        שלושה תנאים חייבים להתקיים יחד
-        <div style="flex:1;height:1px;background:rgba(0,255,136,0.2)"></div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.15);border-right:3px solid var(--green)">
-          <div style="font-size:20px;min-width:28px">1️⃣</div>
-          <div style="flex:1">
-            <div style="font-size:17px;font-weight:700;color:var(--green);margin-bottom:5px">המחיר חצה את הממוצע מלמטה למעלה</div>
-            <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,0.2);padding:8px 12px;margin-top:6px">
-              אתמול: מחיר $148 &lt; SMA $150 → מתחת ❌<br>
-              היום:&nbsp;&nbsp; מחיר $151 &gt; SMA $150 → מעל ✅<br>
-              <span style="color:var(--green)">→ חציה זוהתה!</span>
-            </div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.15);border-right:3px solid var(--green)">
-          <div style="font-size:20px;min-width:28px">2️⃣</div>
-          <div style="flex:1">
-            <div style="font-size:17px;font-weight:700;color:var(--green);margin-bottom:5px">הממוצע ישר → או עולה ↗ (לא יורד)</div>
-            <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,0.2);padding:8px 12px;margin-top:6px">
-              SMA לפני 5 ימים: $149 → SMA היום: $150 ✅ עולה<br>
-              SMA לפני 5 ימים: $152 → SMA היום: $150 ❌ יורד — חסום!<br>
-              <span style="color:var(--muted)">סף שטוח: שינוי של פחות מ-0.1%</span>
-            </div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.15);border-right:3px solid var(--green)">
-          <div style="font-size:20px;min-width:28px">3️⃣</div>
-          <div style="flex:1">
-            <div style="font-size:17px;font-weight:700;color:var(--green);margin-bottom:5px">המחיר קרוב לממוצע (בטווח שהגדרת)</div>
-            <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);line-height:1.9;background:rgba(0,0,0,0.2);padding:8px 12px;margin-top:6px">
-              הגדרת 2% קרוב לSMA:<br>
-              מחיר $151 | SMA $150 → פער 0.67% ✅ בתוך 2%<br>
-              מחיר $160 | SMA $150 → פער 6.67% ❌ רחוק מדי — הרכבת עזבה
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div style="height:1px;background:var(--border)"></div>
-
-    <!-- Signal types -->
-    <div>
-      <div style="font-size:10px;letter-spacing:3px;color:var(--blue);text-transform:uppercase;margin-bottom:12px">סוגי הסיגנלים</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-
-        <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1px solid var(--border)">
-          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 10px;background:rgba(0,255,136,0.15);color:var(--green);border:1px solid rgba(0,255,136,0.5);border-radius:2px;white-space:nowrap;animation:pulse 2s infinite">🟢 קנייה (חי)</span>
-          <div>
-            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:2px">חציה שזוהתה עכשיו</div>
-            <div style="font-size:13px;color:var(--muted)">קרתה בין הסריקה הקודמת לנוכחית — הכי אמין, פעל מהר</div>
-          </div>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1px solid var(--border)">
-          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 10px;background:rgba(255,184,0,0.12);color:var(--amber);border:1px solid rgba(255,184,0,0.4);border-radius:2px;white-space:nowrap">🕐 לפני 1 נרות</span>
-          <div>
-            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:2px">חציה בנר האחרון — זוהה בסריקה ראשונה</div>
-            <div style="font-size:13px;color:var(--muted)">יומי = אתמול | שבועי = שבוע שעבר. בדוק שהמחיר עדיין מעל</div>
-          </div>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;border:1px solid var(--border)">
-          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 10px;background:rgba(255,184,0,0.12);color:var(--amber);border:1px solid rgba(255,184,0,0.4);border-radius:2px;white-space:nowrap">🕐 לפני 2 נרות</span>
-          <div>
-            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:2px">חציה לפני-אחרון — עדיין רלוונטי</div>
-            <div style="font-size:13px;color:var(--muted)">יומי = שלשום | שבועי = לפני שבועיים. בדוק תמונה כוללת</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div style="height:1px;background:var(--border)"></div>
-
-    <!-- No signal -->
-    <div>
-      <div style="font-size:10px;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-bottom:12px">מתי לא יופיע סיגנל קנייה</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div style="padding:10px 14px;border:1px solid rgba(255,51,85,0.2);background:rgba(255,51,85,0.04)">
-          <div style="font-size:14px;color:var(--red);margin-bottom:3px">✗ SMA יורד ↘</div>
-          <div style="font-size:12px;color:var(--muted)">חציה נגד המגמה = סיכון גבוה</div>
-        </div>
-        <div style="padding:10px 14px;border:1px solid rgba(255,51,85,0.2);background:rgba(255,51,85,0.04)">
-          <div style="font-size:14px;color:var(--red);margin-bottom:3px">✗ מחיר רחוק מ-SMA</div>
-          <div style="font-size:12px;color:var(--muted)">החציה ישנה — פספסת את הכניסה</div>
-        </div>
-        <div style="padding:10px 14px;border:1px solid rgba(255,51,85,0.2);background:rgba(255,51,85,0.04)">
-          <div style="font-size:14px;color:var(--red);margin-bottom:3px">✗ חציה מלמעלה למטה</div>
-          <div style="font-size:12px;color:var(--muted)">זה סיגנל מכירה/יציאה, לא קנייה</div>
-        </div>
-        <div style="padding:10px 14px;border:1px solid rgba(255,51,85,0.2);background:rgba(255,51,85,0.04)">
-          <div style="font-size:14px;color:var(--red);margin-bottom:3px">✗ מעל SMA ללא חציה</div>
-          <div style="font-size:12px;color:var(--muted)">מחיר כבר מעל — אין אירוע חדש</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="height:1px;background:var(--border)"></div>
-
-    <!-- Volume bonus -->
-    <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 16px;background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.2)">
-      <div style="font-size:22px;min-width:28px">📊</div>
-      <div>
-        <div style="font-size:16px;font-weight:700;color:var(--amber);margin-bottom:5px">בונוס: נפח גבוה = סיגנל חזק יותר</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.7">
-          נפח מעל 1.5x הממוצע של 20 ימים — הסיגנל אמין יותר כי יש מאחוריו כסף רציני.<br>
-          הנפח <b style="color:var(--text)">לא חוסם</b> את הסיגנל אם הוא נמוך, אבל מוצג כ-badge נפרד.
-        </div>
-      </div>
-    </div>
-
-    <!-- Close btn -->
-    <button onclick="closeHelp()" style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;padding:12px;border:1px solid var(--blue);color:var(--blue);background:transparent;cursor:pointer;text-transform:uppercase;transition:all 0.15s" onmouseover="this.style.background='var(--blue)';this.style.color='var(--bg)'" onmouseout="this.style.background='transparent';this.style.color='var(--blue)'">
-      סגור ✓
-    </button>
-
-  </div>
 </div>
 
 <script>
@@ -646,201 +408,39 @@ const SP500 = [
 ];
 
 // ─────────────────────────────────────────────
-// Nasdaq 100 (sorted by market cap, top 100)
+// State
 // ─────────────────────────────────────────────
-const NQ100 = [
-  ["NVDA","NVIDIA"],["AAPL","Apple"],["MSFT","Microsoft"],["AMZN","Amazon"],["GOOGL","Alphabet A"],
-  ["GOOG","Alphabet C"],["META","Meta Platforms"],["TSLA","Tesla"],["AVGO","Broadcom"],["COST","Costco"],
-  ["NFLX","Netflix"],["ASML","ASML"],["AMD","AMD"],["LIN","Linde"],["QCOM","Qualcomm"],
-  ["INTU","Intuit"],["ISRG","Intuitive Surgical"],["AMAT","Applied Materials"],["TXN","Texas Instruments"],["BKNG","Booking Holdings"],
-  ["ADP","ADP"],["HON","Honeywell"],["AMGN","Amgen"],["PDD","PDD Holdings"],["VRTX","Vertex Pharma"],
-  ["ADI","Analog Devices"],["PANW","Palo Alto Networks"],["SBUX","Starbucks"],["LRCX","Lam Research"],["CSX","CSX Corp"],
-  ["GILD","Gilead Sciences"],["MU","Micron Tech"],["REGN","Regeneron"],["SNPS","Synopsys"],["CDNS","Cadence Design"],
-  ["KLAC","KLA Corp"],["MELI","MercadoLibre"],["CRWD","CrowdStrike"],["CTAS","Cintas"],["ORLY","O'Reilly Auto"],
-  ["MAR","Marriott"],["NXPI","NXP Semi"],["CEG","Constellation Energy"],["ABNB","Airbnb"],["FTNT","Fortinet"],
-  ["PCAR","PACCAR"],["MRVL","Marvell Tech"],["ROST","Ross Stores"],["WDAY","Workday"],["ADSK","Autodesk"],
-  ["CHTR","Charter Comm"],["PAYX","Paychex"],["CPRT","Copart"],["MCHP","Microchip Tech"],["FAST","Fastenal"],
-  ["VRSK","Verisk"],["DXCM","Dexcom"],["ODFL","Old Dominion"],["IDXX","IDEXX Labs"],["BIIB","Biogen"],
-  ["ON","ON Semi"],["GEHC","GE HealthCare"],["TTWO","Take-Two"],["FANG","Diamondback Energy"],["CDW","CDW Corp"],
-  ["GFS","GlobalFoundries"],["ANSS","ANSYS"],["TEAM","Atlassian"],["ARM","ARM Holdings"],["ILMN","Illumina"],
-  ["DDOG","Datadog"],["ZS","Zscaler"],["SGEN","Seagen"],["CTSH","Cognizant"],["AEP","American Electric"],
-  ["EA","Electronic Arts"],["KDP","Keurig Dr Pepper"],["MNST","Monster Beverage"],["XEL","Xcel Energy"],["LULU","lululemon"],
-  ["WBA","Walgreens"],["EBAY","eBay"],["DLTR","Dollar Tree"],["CSGP","CoStar Group"],["SIRI","Sirius XM"],
-  ["ZM","Zoom Video"],["ENPH","Enphase Energy"],["ALGN","Align Tech"],["JD","JD.com"],["LCID","Lucid Group"],
-  ["RIVN","Rivian"],["PYPL","PayPal"],["CMCSA","Comcast"],["HON","Honeywell"],["INTC","Intel"],
-  ["MDLZ","Mondelez"],["ATVI","Activision"],["MDB","MongoDB"],["WBD","Warner Bros"],["NDAQ","Nasdaq"]
-];
-
-// ─────────────────────────────────────────────
-// Universe definitions
-// ─────────────────────────────────────────────
-const UNIVERSES = {
-  SP500: { label: 'S&P 500 מלא (503)',    color: '#ff9500', list: () => SP500 },
-  SP100: { label: 'S&P 100 (100)',         color: '#ff9500', list: () => SP500.slice(0, 100) },
-  SP50:  { label: 'S&P 50 גדולות (50)',    color: '#ff9500', list: () => SP500.slice(0, 50)  },
-  NQ100: { label: 'נאסד"ק 100 (100)',      color: '#a855f7', list: () => NQ100 },
-  NQ50:  { label: 'נאסד"ק 50 גדולות (50)', color: '#a855f7', list: () => NQ100.slice(0, 50) },
-};
-
-let currentUniverse = null; // key into UNIVERSES
 let scanRunning = false;
 let scanTimer = null;
 let countdownTimer = null;
-let prevData = {};
-let stockData = {};
+let prevData = {};      // {sym: {price, ma}}
+let stockData = {};     // {sym: {sym, name, price, changePct, ma, updatedAt, crossToday}}
 let alerts = [];
 let currentFilter = 'all';
 let sortCol = 'sym';
 let sortAsc = true;
-let currentTimeframe = 'daily';
-let soundEnabled = true;
-let isDark = true;
+let currentTimeframe = 'daily'; // 'daily' | 'weekly'
 
-// ─────────────────────────────────────────────
 // ─────────────────────────────────────────────
 // Utils
 // ─────────────────────────────────────────────
 function getMaPeriod() { return parseInt(document.getElementById('maInput').value) || 150; }
 function getInterval() { return parseInt(document.getElementById('intervalSelect').value) || 300; }
-function getNearPct()  { return parseFloat(document.getElementById('nearPct').value) || 1.5; }
-function getTimeframe(){ return currentTimeframe; }
-function fmtPrice(p)   { return p != null ? '$' + p.toFixed(2) : '—'; }
-function fmtPct(p)     { return p != null ? (p >= 0 ? '+' : '') + p.toFixed(2) + '%' : '—'; }
-function fmtTime()     { return new Date().toLocaleTimeString('he-IL'); }
+function getNearPct() { return parseFloat(document.getElementById('nearPct').value) || 1.5; }
+function getTimeframe() { return currentTimeframe; }
+
+function fmtPrice(p) { return p != null ? '$' + p.toFixed(2) : '—'; }
+function fmtPct(p)   { return p != null ? (p >= 0 ? '+' : '') + p.toFixed(2) + '%' : '—'; }
+function fmtTime()   { return new Date().toLocaleTimeString('he-IL'); }
 
 // ─────────────────────────────────────────────
-// localStorage — save & restore settings
+// Timeframe & preset controls
 // ─────────────────────────────────────────────
-const STORAGE_KEY = 'sma_scanner_settings_v2';
-
-function saveSettings() {
-  const s = {
-    universe:   currentUniverse,
-    timeframe:  currentTimeframe,
-    maPeriod:   getMaPeriod(),
-    nearPct:    getNearPct(),
-    interval:   getInterval(),
-    isDark,
-    soundEnabled,
-    savedAt:    new Date().toLocaleString('he-IL')
-  };
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch(e) {}
-}
-
-function loadSettings() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch(e) { return null; }
-}
-
-function applySettings(s) {
-  // Timeframe
-  currentTimeframe = s.timeframe || 'daily';
-  document.getElementById('tfDaily').classList.toggle('active', currentTimeframe === 'daily');
-  document.getElementById('tfWeekly').classList.toggle('active', currentTimeframe === 'weekly');
-  // MA
-  if (s.maPeriod) document.getElementById('maInput').value = s.maPeriod;
-  // nearPct
-  if (s.nearPct) document.getElementById('nearPct').value = s.nearPct;
-  // interval
-  if (s.interval) {
-    const sel = document.getElementById('intervalSelect');
-    for (const opt of sel.options) { if (parseInt(opt.value) === s.interval) { opt.selected = true; break; } }
-  }
-  // Universe
-  if (s.universe && UNIVERSES[s.universe]) {
-    currentUniverse = s.universe;
-    const btn = document.getElementById('u' + s.universe);
-    if (btn) {
-      document.querySelectorAll('.univ-btn').forEach(b => b.classList.remove('active-sp','active-nq'));
-      btn.classList.add(s.universe.startsWith('NQ') ? 'active-nq' : 'active-sp');
-      document.getElementById('univInfo').textContent = UNIVERSES[s.universe].label;
-      document.getElementById('univInfo').style.color = UNIVERSES[s.universe].color;
-    }
-  }
-  // Theme
-  if (s.isDark === false) applyLight();
-  // Sound
-  soundEnabled = s.soundEnabled !== false;
-  updateSoundBtn();
-  updateConfigDisplay();
-}
-
-function showRestoreToast(s) {
-  const univLabel = s.universe ? (UNIVERSES[s.universe]?.label || s.universe) : '—';
-  const tfLabel   = s.timeframe === 'weekly' ? 'שבועי' : 'יומי';
-  const toast = document.createElement('div');
-  toast.className = 'session-toast';
-  toast.id = 'sessionToast';
-  toast.innerHTML = `
-    <h4>📂 הגדרות אחרונות נמצאו</h4>
-    <p>
-      📊 אינדקס: <b>${univLabel}</b><br>
-      📈 גרף: <b>${tfLabel} · SMA${s.maPeriod}</b><br>
-      ⚡ קרוב ל-SMA: <b>${s.nearPct}%</b><br>
-      🕐 נשמר: <b>${s.savedAt || '—'}</b>
-    </p>
-    <div class="toast-btns">
-      <button class="toast-btn restore" onclick="restoreSession()">✓ שחזר הגדרות</button>
-      <button class="toast-btn dismiss" onclick="dismissToast()">✗ התחל מחדש</button>
-    </div>`;
-  document.body.appendChild(toast);
-}
-
-function restoreSession() {
-  const s = loadSettings();
-  if (s) applySettings(s);
-  dismissToast();
-}
-
-function dismissToast() {
-  const t = document.getElementById('sessionToast');
-  if (t) t.remove();
-}
-
-// ─────────────────────────────────────────────
-// Theme toggle
-// ─────────────────────────────────────────────
-function applyLight() {
-  isDark = false;
-  document.body.classList.add('light');
-  document.getElementById('themeBtn').textContent = '☀️ בהיר';
-}
-
-function applyDark() {
-  isDark = true;
-  document.body.classList.remove('light');
-  document.getElementById('themeBtn').textContent = '🌙 כהה';
-}
-
-function toggleTheme() {
-  if (isDark) applyLight(); else applyDark();
-  saveSettings();
-}
-
-// ─────────────────────────────────────────────
-// Sound toggle
-// ─────────────────────────────────────────────
-function toggleSound() {
-  soundEnabled = !soundEnabled;
-  updateSoundBtn();
-  saveSettings();
-}
-
-function updateSoundBtn() {
-  const btn = document.getElementById('soundBtn');
-  if (soundEnabled) { btn.textContent = '🔔 קול'; btn.classList.add('on'); }
-  else              { btn.textContent = '🔕 שקט'; btn.classList.remove('on'); }
-}
-
 function setTimeframe(tf, btn) {
   currentTimeframe = tf;
   document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   updateConfigDisplay();
-  saveSettings();
 }
 
 function applyPreset(tf, period) {
@@ -849,13 +449,12 @@ function applyPreset(tf, period) {
   document.getElementById('tfDaily').classList.toggle('active', tf === 'daily');
   document.getElementById('tfWeekly').classList.toggle('active', tf === 'weekly');
   updateConfigDisplay();
-  saveSettings();
+  // Reset data so next scan uses new settings
   if (scanRunning) { stockData = {}; prevData = {}; }
 }
 
 function onSettingChange() {
   updateConfigDisplay();
-  saveSettings();
   if (scanRunning) { stockData = {}; prevData = {}; }
 }
 
@@ -870,40 +469,6 @@ function updateConfigDisplay() {
 }
 
 // ─────────────────────────────────────────────
-// Universe selector
-// ─────────────────────────────────────────────
-function setUniverse(key, btn) {
-  currentUniverse = key;
-  const univ = UNIVERSES[key];
-
-  // Update button styles
-  document.querySelectorAll('.univ-btn').forEach(b => {
-    b.classList.remove('active-sp', 'active-nq');
-  });
-  const cls = key.startsWith('NQ') ? 'active-nq' : 'active-sp';
-  btn.classList.add(cls);
-
-  // Update info display
-  document.getElementById('univInfo').textContent = univ.label;
-  document.getElementById('univInfo').style.color = univ.color;
-
-  // Update header subtitle
-  const univShort = key.startsWith('NQ') ? `נאסד"ק` : 'S&P';
-  document.querySelector('.logo .tag').innerHTML =
-    `${univShort} · ${univ.list().length} Stocks · <span id="headerTf">${currentTimeframe === 'daily' ? 'Daily' : 'Weekly'}</span> Chart · Real-Time Crossover Alerts`;
-
-  // Reset data on universe change
-  stockData = {}; prevData = {};
-  saveSettings();
-  renderTable();
-}
-
-function getActiveList() {
-  if (!currentUniverse) return null;
-  return UNIVERSES[currentUniverse].list();
-}
-
-// ─────────────────────────────────────────────
 // Fetch single stock via Yahoo Finance
 // Uses allorigins CORS proxy (free, no key)
 // ─────────────────────────────────────────────
@@ -912,6 +477,8 @@ async function fetchStock(sym, name) {
   const tf       = getTimeframe();
   const maPeriod = getMaPeriod();
 
+  // For weekly: fetch 5 years of daily data, then resample to weekly candles
+  // For daily:  fetch enough history to cover the SMA period (max 2y for safety)
   const interval = tf === 'weekly' ? '1wk' : '1d';
   const range    = tf === 'weekly'
     ? `${Math.ceil(maPeriod / 52 * 5 + 1)}y`.replace(/^[0-9]+/, n => Math.min(Math.max(parseInt(n), 2), 10))
@@ -928,77 +495,24 @@ async function fetchStock(sym, name) {
   if (!result) throw new Error('No data');
 
   const meta   = result.meta;
-  const closes  = result.indicators?.quote?.[0]?.close   ?? [];
-  const volumes = result.indicators?.quote?.[0]?.volume  ?? [];
+  const closes = result.indicators?.quote?.[0]?.close ?? [];
 
   const price     = meta.regularMarketPrice;
   const prevClose = meta.chartPreviousClose ?? meta.previousClose;
   const changePct = prevClose ? ((price - prevClose) / prevClose) * 100 : 0;
 
-  // Current volume vs 20-day average volume
-  const currentVol = meta.regularMarketVolume ?? (volumes[volumes.length - 1] || 0);
-  const validVols  = volumes.filter(v => v != null && v > 0);
-  const avgVol20   = validVols.length >= 20
-    ? validVols.slice(-20).reduce((a, b) => a + b, 0) / 20
-    : (validVols.length > 0 ? validVols.reduce((a, b) => a + b, 0) / validVols.length : 0);
-  const volRatio   = avgVol20 > 0 ? currentVol / avgVol20 : null;
-  // volStatus: 'high' (>1.5x avg), 'normal', 'low' (<0.5x avg)
-  const volStatus  = volRatio == null ? null : volRatio >= 1.5 ? 'high' : volRatio < 0.5 ? 'low' : 'normal';
-
+  // Compute SMA from the candle closes
   const valid = closes.filter(c => c != null && c > 0);
   const slice = valid.slice(-maPeriod);
   const ma    = slice.length >= Math.min(maPeriod, 5)
     ? slice.reduce((a, b) => a + b, 0) / slice.length
     : null;
 
-  // MA Slope
-  let maSlope = null, maSlopePct = null;
-  const lookback = tf === 'weekly' ? 3 : 5;
-  if (valid.length >= maPeriod + lookback) {
-    const slicePrev = valid.slice(-(maPeriod + lookback), -lookback);
-    const maPrev    = slicePrev.reduce((a, b) => a + b, 0) / slicePrev.length;
-    maSlopePct = ((ma - maPrev) / maPrev) * 100;
-    if      (maSlopePct >  0.1) maSlope = 'up';
-    else if (maSlopePct < -0.1) maSlope = 'down';
-    else                         maSlope = 'flat';
-  }
-
-  return { sym, name, price, changePct, ma, maSlope, maSlopePct, currentVol, avgVol20, volRatio, volStatus, tf, maPeriod, validCloses: valid };
+  return { sym, name, price, changePct, ma, tf, maPeriod };
 }
 
 // ─────────────────────────────────────────────
-// Historical crossover — check last 2 candles
-// Returns: null | { type, candlesAgo }
-// ─────────────────────────────────────────────
-function detectHistoricalCross(valid, maPeriod) {
-  // Need at least maPeriod + 3 candles to compare 2 candles back
-  if (valid.length < maPeriod + 3) return null;
-
-  // Compute MA for each of last 3 candle positions
-  // idx 0 = 2 candles ago, idx 1 = 1 candle ago, idx 2 = last candle
-  const maAt = (offset) => {
-    const sl = valid.slice(-(maPeriod + offset), offset === 0 ? undefined : -offset);
-    return sl.reduce((a, b) => a + b, 0) / sl.length;
-  };
-
-  const prices = valid.slice(-3);   // [2ago, 1ago, last]
-  const mas    = [maAt(2), maAt(1), maAt(0)];
-
-  // Check candle 1 ago: was it a cross?
-  if (prices[0] < mas[0] && prices[1] >= mas[1]) return { type: 'cross-up',   candlesAgo: 1 };
-  if (prices[0] > mas[0] && prices[1] <= mas[1]) return { type: 'cross-down', candlesAgo: 1 };
-
-  // Check candle 2 ago
-  if (valid.length >= maPeriod + 4) {
-    const ma3ago = maAt(3);
-    const p3ago  = valid[valid.length - 4];
-    if (p3ago < ma3ago && prices[0] >= mas[0]) return { type: 'cross-up',   candlesAgo: 2 };
-    if (p3ago > ma3ago && prices[0] <= mas[0]) return { type: 'cross-down', candlesAgo: 2 };
-  }
-
-  return null;
-}
-// BUY signal = cross-up + (MA flat or rising) + price within nearPct% of MA
+// Crossover detection
 // ─────────────────────────────────────────────
 function detectCross(sym, newPrice, newMa) {
   const prev = prevData[sym];
@@ -1009,94 +523,44 @@ function detectCross(sym, newPrice, newMa) {
 }
 
 // ─────────────────────────────────────────────
-// BUY SIGNAL logic — all 3 conditions must pass:
-// 1. Cross UP (price was below MA, now above)
-// 2. MA is flat or rising (not falling)
-// 3. Price is within nearPct% of MA (just crossed, not far away)
-// BONUS: volume is high (>1.5x avg) — strengthens signal
-// candlesAgo: 0 = live cross, 1-2 = historical (first scan)
-// ─────────────────────────────────────────────
-function isBuySignal(crossType, maSlope, price, ma, volStatus, candlesAgo = 0) {
-  if (crossType !== 'cross-up') return false;
-  if (!ma || !maSlope) return false;
-  if (maSlope === 'down') return false;
-  const nearPct = getNearPct();
-  const diff = Math.abs(((price - ma) / ma) * 100);
-  // Historical signals: allow slightly wider range (price may have moved since cross)
-  const threshold = candlesAgo > 0 ? nearPct * 2 : nearPct;
-  if (diff > threshold) return false;
-  return true;
-}
-
-// ─────────────────────────────────────────────
 // Sound alert
 // ─────────────────────────────────────────────
 function playBeep(type) {
-  if (!soundEnabled) return;
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (type === 'buy-signal') {
-      // 3-note ascending arpeggio for live buy signal
-      [0, 0.18, 0.36].forEach((offset, i) => {
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.frequency.value = [523, 659, 784][i];
-        osc.type = 'sine';
-        const t = ctx.currentTime + offset;
-        gain.gain.setValueAtTime(0.3, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-        osc.start(t); osc.stop(t + 0.35);
-      });
-    } else if (type === 'historical') {
-      // Single soft chime for historical signal (first scan)
+    [0, 0.15].forEach(offset => {
       const osc  = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.frequency.value = 660;
+      osc.frequency.value = type === 'cross-up' ? 880 : 440;
       osc.type = 'sine';
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-      osc.start(); osc.stop(ctx.currentTime + 0.6);
-    } else {
-      [0, 0.15].forEach(offset => {
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.frequency.value = type === 'cross-up' ? 880 : 440;
-        osc.type = 'sine';
-        const t = ctx.currentTime + offset;
-        gain.gain.setValueAtTime(0.25, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-        osc.start(t); osc.stop(t + 0.3);
-      });
-    }
+      const t = ctx.currentTime + offset;
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc.start(t); osc.stop(t + 0.3);
+    });
   } catch(e) {}
 }
 
 // ─────────────────────────────────────────────
 // Add alert
 // ─────────────────────────────────────────────
-function addAlert(sym, name, price, ma, type, maSlope, buySignal, volStatus, candlesAgo = 0) {
-  const tf       = getTimeframe() === 'daily' ? 'יומי' : 'שבועי';
-  const mp       = getMaPeriod();
-  const volBonus = buySignal && volStatus === 'high';
-  const isHistorical = candlesAgo > 0;
-  alerts.unshift({ sym, name, price, ma, type, time: fmtTime(), tf, mp, maSlope, buySignal, volStatus, volBonus, candlesAgo, isHistorical });
+function addAlert(sym, name, price, ma, type) {
+  const tf  = getTimeframe() === 'daily' ? 'יומי' : 'שבועי';
+  const mp  = getMaPeriod();
+  alerts.unshift({ sym, name, price, ma, type, time: fmtTime(), tf, mp });
   if (alerts.length > 100) alerts.pop();
   document.getElementById('statCross').textContent = alerts.length;
   document.getElementById('alertCount').textContent = `${alerts.length} התראות`;
   renderAlerts();
-  // Historical signals: quieter sound (only 1 beep, not the full arpeggio)
-  playBeep(buySignal && !isHistorical ? 'buy-signal' : isHistorical ? 'historical' : type);
+  playBeep(type);
 
-  if (Notification.permission === 'granted' && !isHistorical) {
-    const volTag = volBonus ? ' 📊 נפח גבוה!' : '';
-    const title  = buySignal ? `🟢 סיגנל קנייה${volBonus ? ' + נפח!' : ''}: ${sym}` : `SMA${mp} (${tf}) חציה: ${sym}`;
-    const body   = buySignal
-      ? `חצה מעלה + SMA ${maSlope === 'up' ? 'עולה ↗' : 'ישר →'}${volTag} | $${price.toFixed(2)} vs SMA $${ma.toFixed(2)}`
-      : `${type === 'cross-up' ? '▲ חצה מעלה' : '▼ חצה מטה'} | $${price.toFixed(2)} vs SMA $${ma.toFixed(2)}`;
-    new Notification(title, { body, icon: 'https://em-content.zobj.net/source/google/387/bell_1f514.png' });
+  // Browser notification if allowed
+  if (Notification.permission === 'granted') {
+    new Notification(`SMA${mp} (${tf}) חציה: ${sym}`, {
+      body: `${type === 'cross-up' ? '▲ חצה מעלה' : '▼ חצה מטה'} | מחיר: $${price.toFixed(2)} | SMA: $${ma.toFixed(2)}`,
+      icon: 'https://em-content.zobj.net/source/google/387/bell_1f514.png'
+    });
   }
 }
 
@@ -1109,36 +573,18 @@ function renderAlerts() {
     c.innerHTML = '<div class="empty-state">אין חציות עדיין — הסריקה פעילה</div>';
     return;
   }
-  c.innerHTML = alerts.map(a => {
-    const slopeIcon = a.maSlope === 'up' ? '↗' : a.maSlope === 'flat' ? '→' : a.maSlope === 'down' ? '↘' : '';
-    const slopeClr  = a.maSlope === 'up' ? 'var(--green)' : a.maSlope === 'flat' ? 'var(--amber)' : 'var(--red)';
-    const buyTag = a.buySignal
-      ? a.isHistorical
-        ? `<span style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 8px;background:rgba(255,184,0,0.12);color:var(--amber);border:1px solid rgba(255,184,0,0.4);border-radius:2px;letter-spacing:1px">🕐 קנייה (לפני ${a.candlesAgo} נרות)</span>`
-        : `<span style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 8px;background:rgba(0,255,136,0.15);color:var(--green);border:1px solid rgba(0,255,136,0.5);border-radius:2px;letter-spacing:1px;animation:pulse 1s infinite">🟢 קנייה (חי)</span>`
-      : '';
-    const volTag = a.volStatus === 'high'
-      ? `<span style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 6px;background:rgba(255,184,0,0.1);color:var(--amber);border:1px solid rgba(255,184,0,0.3);border-radius:2px">📊 נפח גבוה</span>`
-      : '';
-    return `
-    <div class="alert-card ${a.type}" style="${a.buySignal ? 'border:1px solid rgba(0,255,136,0.4);box-shadow:0 0 16px rgba(0,255,136,0.12)' : ''}">
+  c.innerHTML = alerts.map(a => `
+    <div class="alert-card ${a.type}">
       <span class="badge">${a.type === 'cross-up' ? '▲ חצה מעלה' : '▼ חצה מטה'}</span>
       <span class="alert-sym">${a.sym}</span>
-      <div style="display:flex;flex-direction:column;gap:3px">
-        <span class="alert-name">${a.name}</span>
-        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
-          ${buyTag}
-          ${volTag}
-          ${a.maSlope ? `<span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:${slopeClr}">SMA ${slopeIcon} ${a.maSlope === 'up' ? 'עולה' : a.maSlope === 'flat' ? 'ישר' : 'יורד'}</span>` : ''}
-        </div>
-      </div>
+      <span class="alert-name">${a.name}</span>
       <span class="alert-price">${fmtPrice(a.price)}</span>
       <div>
         <div class="alert-ma-lbl">${a.tf === 'שבועי' ? 'שבועי' : 'יומי'} SMA${a.mp}</div>
         <div class="alert-ma-val">${fmtPrice(a.ma)}</div>
       </div>
       <span class="alert-time">${a.time}</span>
-    </div>`}).join('');
+    </div>`).join('');
 }
 
 // ─────────────────────────────────────────────
@@ -1173,13 +619,10 @@ function renderTable() {
     if (!d.ma) return currentFilter === 'all';
     const diff = ((d.price - d.ma) / d.ma) * 100;
     const near = Math.abs(diff) <= nearPct;
-    const buySignal = d.crossToday && d.maSlope !== 'down' && d.price >= d.ma &&
-      (d.candlesAgo > 0 || Math.abs(diff) <= nearPct);
     if (currentFilter === 'above') return d.price >= d.ma;
     if (currentFilter === 'below') return d.price < d.ma;
     if (currentFilter === 'near')  return near;
     if (currentFilter === 'cross') return d.crossToday;
-    if (currentFilter === 'buy')   return buySignal;
     return true;
   });
 
@@ -1213,67 +656,31 @@ function renderTable() {
 
   if (!rows.length) {
     document.getElementById('stockTable').innerHTML =
-      `<tr><td colspan="9" class="loading-cell" style="text-align:center;padding:28px">אין תוצאות</td></tr>`;
+      `<tr><td colspan="8" class="loading-cell" style="text-align:center;padding:28px">אין תוצאות</td></tr>`;
     return;
   }
 
   document.getElementById('stockTable').innerHTML = rows.map(d => {
     const changeCls = d.changePct >= 0 ? 'up' : 'dn';
-    let maCell='—', diffCell='—', slopeCell='—', volCell='—', statusCell='—';
+    let maCell='—', diffCell='—', statusCell='—';
     if (d.ma) {
       const diff    = ((d.price - d.ma) / d.ma) * 100;
       const diffCls = diff >= 0 ? 'up' : 'dn';
       const near    = Math.abs(diff) <= nearPct;
       maCell   = `<span class="ma-col">${fmtPrice(d.ma)}</span>`;
       diffCell = `<span class="${diffCls}">${fmtPct(diff)}</span>`;
-
-      // Slope cell
-      if (d.maSlope) {
-        const slopeIcon = d.maSlope === 'up' ? '↗' : d.maSlope === 'flat' ? '→' : '↘';
-        const slopeClr  = d.maSlope === 'up' ? 'var(--green)' : d.maSlope === 'flat' ? 'var(--amber)' : 'var(--red)';
-        const slopeLbl  = d.maSlope === 'up' ? 'עולה' : d.maSlope === 'flat' ? 'ישר' : 'יורד';
-        const slopePct  = d.maSlopePct != null ? ` (${d.maSlopePct > 0 ? '+' : ''}${d.maSlopePct.toFixed(2)}%)` : '';
-        slopeCell = `<span style="color:${slopeClr};font-size:14px">${slopeIcon} ${slopeLbl}</span><span style="color:var(--muted);font-size:10px">${slopePct}</span>`;
-      }
-
-      // Volume cell
-      if (d.volRatio != null) {
-        const pct  = Math.min(d.volRatio / 2, 1) * 100; // bar fills at 2x avg
-        const cls  = d.volStatus;
-        const lbl  = d.volRatio.toFixed(1) + 'x';
-        volCell = `<div class="vol-bar-wrap">
-          <div class="vol-bar-bg"><div class="vol-bar ${cls}" style="width:${pct}%"></div></div>
-          <span class="vol-label ${cls === 'high' ? 'high' : ''}">${lbl}</span>
-        </div>`;
-      }
-
-      // Status + buy signal
       const nearTag = near ? `<span class="near-badge">קרוב!</span>` : '';
-      const liveBuy = d.crossToday && d.maSlope !== 'down' && near && d.price >= d.ma && !d.candlesAgo;
-      const histBuy = d.crossToday && d.maSlope !== 'down' && d.price >= d.ma && d.candlesAgo > 0;
-      const buyTag  = liveBuy
-        ? `<span style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 7px;background:rgba(0,255,136,0.15);color:var(--green);border:1px solid rgba(0,255,136,0.5);border-radius:2px;animation:pulse 1s infinite">🟢 חי</span> `
-        : histBuy
-          ? `<span style="font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 7px;background:rgba(255,184,0,0.1);color:var(--amber);border:1px solid rgba(255,184,0,0.4);border-radius:2px">🕐 לפני ${d.candlesAgo}נ׳</span> `
-          : '';
-      if (d.price >= d.ma) statusCell = `${buyTag}${nearTag}<span class="up">▲ מעל</span>`;
+      if (d.price >= d.ma) statusCell = `${nearTag}<span class="up">▲ מעל</span>`;
       else                  statusCell = `${nearTag}<span class="dn">▼ מתחת</span>`;
-      if (d.crossToday && !liveBuy && !histBuy) statusCell += ` <span style="color:var(--amber)">🔔</span>`;
+      if (d.crossToday) statusCell += ` <span style="color:var(--amber)">🔔</span>`;
     }
-    const rowHighlight = d.crossToday && d.maSlope !== 'down' && d.price >= d.ma
-      ? d.candlesAgo > 0
-        ? 'background:rgba(255,184,0,0.04);'   // amber tint for historical
-        : 'background:rgba(0,255,136,0.04);'   // green tint for live
-      : '';
-    return `<tr style="${rowHighlight}">
+    return `<tr>
       <td class="sym-cell">${d.sym}</td>
       <td class="name-cell">${d.name}</td>
       <td>${fmtPrice(d.price)}</td>
       <td class="${changeCls}">${fmtPct(d.changePct)}</td>
       <td>${maCell}</td>
       <td>${diffCell}</td>
-      <td>${slopeCell}</td>
-      <td>${volCell}</td>
       <td>${statusCell}</td>
       <td style="color:var(--muted);font-size:11px">${d.updatedAt || '—'}</td>
     </tr>`;
@@ -1294,56 +701,38 @@ async function runScan() {
   label.classList.add('active');
   bgEl.classList.add('active');
 
-  const list  = getActiveList();
-  if (!list) { dot.className = 'dot'; return; }
-
-  const total = list.length;
+  const total = SP500.length;
   let done = 0;
 
-  for (const [sym, name] of list) {
+  for (const [sym, name] of SP500) {
     if (!scanRunning) break;
 
     label.textContent = `סורק ${done + 1}/${total}: ${sym}`;
     bar.style.width   = `${((done + 1) / total) * 100}%`;
 
     try {
-      const d = await fetchStock(sym, name);
-      const isFirstScan = !prevData[sym]; // no previous data = first scan
-
-      let cross = null, buy = false, candlesAgo = 0;
-
-      if (isFirstScan) {
-        // ── First scan: detect cross from last 2 candles historically ──
-        const hist = detectHistoricalCross(d.validCloses, d.maPeriod);
-        if (hist && hist.type === 'cross-up') {
-          cross      = hist.type;
-          candlesAgo = hist.candlesAgo;
-          buy        = isBuySignal(cross, d.maSlope, d.price, d.ma, d.volStatus, candlesAgo);
-          addAlert(sym, name, d.price, d.ma, cross, d.maSlope, buy, d.volStatus, candlesAgo);
-        }
-      } else {
-        // ── Subsequent scans: live comparison vs previous scan ──
-        cross = detectCross(sym, d.price, d.ma);
-        if (cross) {
-          buy = isBuySignal(cross, d.maSlope, d.price, d.ma, d.volStatus, 0);
-          addAlert(sym, name, d.price, d.ma, cross, d.maSlope, buy, d.volStatus, 0);
-        }
+      const d     = await fetchStock(sym, name);
+      const cross = detectCross(sym, d.price, d.ma);
+      if (cross) {
+        addAlert(sym, name, d.price, d.ma, cross);
+        if (stockData[sym]) stockData[sym].crossToday = true;
       }
-
       prevData[sym] = { price: d.price, ma: d.ma };
       stockData[sym] = {
         ...d,
-        crossToday:  !!cross || stockData[sym]?.crossToday,
-        candlesAgo,
-        buySignalActive: buy,
+        crossToday: stockData[sym]?.crossToday || !!cross,
         updatedAt: fmtTime()
       };
     } catch (e) {
-      if (!stockData[sym]) stockData[sym] = { sym, name, price: null, changePct: null, ma: null, maSlope: null, maSlopePct: null, updatedAt: 'שגיאה', crossToday: false };
+      // keep existing data, mark error
+      if (!stockData[sym]) stockData[sym] = { sym, name, price: null, changePct: null, ma: null, updatedAt: 'שגיאה', crossToday: false };
     }
 
     done++;
+    // Render every 10 stocks to avoid thrashing
     if (done % 10 === 0 || done === total) renderTable();
+
+    // Small delay to avoid rate limiting
     await sleep(400);
   }
 
@@ -1381,11 +770,6 @@ function startCountdown() {
 // Controls
 // ─────────────────────────────────────────────
 function startScanner() {
-  if (!currentUniverse) {
-    alert('בחר תחילה איזה אינדקס לסרוק (S&P / נאסד"ק)');
-    return;
-  }
-
   // Request notification permission
   if (Notification.permission === 'default') Notification.requestPermission();
 
@@ -1396,9 +780,9 @@ function startScanner() {
   // Reset all data (new scan with current settings)
   stockData = {};
   prevData  = {};
+  Object.values(stockData).forEach(d => { d.crossToday = false; });
 
-  const tf = currentTimeframe === 'daily' ? 'יומי' : 'שבועי';
-  document.getElementById('statusText').textContent = `מתחיל סריקה · ${UNIVERSES[currentUniverse].label} · ${tf} SMA${getMaPeriod()}...`;
+  document.getElementById('statusText').textContent = `מתחיל סריקה · ${currentTimeframe === 'daily' ? 'יומי' : 'שבועי'} SMA${getMaPeriod()}...`;
   updateConfigDisplay();
   runScan();
 }
@@ -1424,34 +808,8 @@ function clearAlerts() {
   renderTable();
 }
 
-// ─────────────────────────────────────────────
-// Help modal
-// ─────────────────────────────────────────────
-function openHelp() {
-  document.getElementById('helpModal').style.display   = 'block';
-  document.getElementById('helpOverlay').style.display = 'block';
-  document.body.style.overflow = 'hidden';
-}
-
-function closeHelp() {
-  document.getElementById('helpModal').style.display   = 'none';
-  document.getElementById('helpOverlay').style.display = 'none';
-  document.body.style.overflow = '';
-}
-
-// close on Escape key
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp(); });
-
-// ─────────────────────────────────────────────
 // Init on page load
-// ─────────────────────────────────────────────
-(function init() {
-  updateConfigDisplay();
-  const saved = loadSettings();
-  if (saved) {
-    showRestoreToast(saved);
-  }
-})();
+updateConfigDisplay();
 </script>
 </body>
 </html>
