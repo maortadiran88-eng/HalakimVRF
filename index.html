@@ -33,7 +33,7 @@ body.light {
 body.light .logo h1 { color: #1a2a3a; }
 body.light .logo .ma { color: var(--blue); text-shadow: none; }
 body.light thead { background: var(--bg); }
-body.light body::before { display: none; }
+body.light::before { display: none; }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,170,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
@@ -198,6 +198,7 @@ td.name-cell{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weigh
 .preset-btn{font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 10px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);transition:all 0.12s;letter-spacing:1px;}
 .preset-btn:hover{border-color:var(--blue);color:var(--blue);}
 
+@media(max-width:900px){
   .stats-row{grid-template-columns:repeat(2,1fr);}
   .alert-card{grid-template-columns:auto 1fr auto;}
   .alert-name,.alert-ma-val,.alert-ma-lbl,.alert-time{display:none;}
@@ -696,8 +697,17 @@ let soundEnabled = true;
 let isDark = true;
 
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
 // Utils
 // ─────────────────────────────────────────────
+function getMaPeriod() { return parseInt(document.getElementById('maInput').value) || 150; }
+function getInterval() { return parseInt(document.getElementById('intervalSelect').value) || 300; }
+function getNearPct()  { return parseFloat(document.getElementById('nearPct').value) || 1.5; }
+function getTimeframe(){ return currentTimeframe; }
+function fmtPrice(p)   { return p != null ? '$' + p.toFixed(2) : '—'; }
+function fmtPct(p)     { return p != null ? (p >= 0 ? '+' : '') + p.toFixed(2) + '%' : '—'; }
+function fmtTime()     { return new Date().toLocaleTimeString('he-IL'); }
+
 // ─────────────────────────────────────────────
 // localStorage — save & restore settings
 // ─────────────────────────────────────────────
@@ -825,18 +835,6 @@ function updateSoundBtn() {
   else              { btn.textContent = '🔕 שקט'; btn.classList.remove('on'); }
 }
 
- }
-function getInterval() { return parseInt(document.getElementById('intervalSelect').value) || 300; }
-function getNearPct() { return parseFloat(document.getElementById('nearPct').value) || 1.5; }
-function getTimeframe() { return currentTimeframe; }
-
-function fmtPrice(p) { return p != null ? '$' + p.toFixed(2) : '—'; }
-function fmtPct(p)   { return p != null ? (p >= 0 ? '+' : '') + p.toFixed(2) + '%' : '—'; }
-function fmtTime()   { return new Date().toLocaleTimeString('he-IL'); }
-
-// ─────────────────────────────────────────────
-// Timeframe & preset controls
-// ─────────────────────────────────────────────
 function setTimeframe(tf, btn) {
   currentTimeframe = tf;
   document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
