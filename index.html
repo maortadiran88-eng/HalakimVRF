@@ -600,6 +600,36 @@ body.light .help-sig-row h4 { color: var(--text); }
   </div>
 </header>
 
+<!-- ══════════════════ FMP API KEY ══════════════════ -->
+<div class="panel" style="border-color:rgba(168,85,247,0.3);background:rgba(168,85,247,0.04)">
+  <div class="panel-row">
+    <div style="font-size:18px">📈</div>
+    <div style="flex:1">
+      <div class="cfg-label" style="color:var(--purple)">קצב צמיחה בהכנסות — Financial Modeling Prep API</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px">
+        <input
+          type="text"
+          id="fmpKeyInput"
+          placeholder="הכנס FMP API Key (חינמי — fmp.com)"
+          dir="ltr"
+          style="font-family:monospace;font-size:13px;padding:6px 12px;background:var(--panel);border:1px solid rgba(168,85,247,0.4);color:var(--text);outline:none;width:320px;letter-spacing:1px"
+          oninput="saveFmpKey()"
+        >
+        <span id="fmpKeyStatus" style="font-size:12px;font-family:monospace"></span>
+        <a href="https://financialmodelingprep.com/register" target="_blank"
+           style="font-family:monospace;font-size:11px;color:var(--purple);letter-spacing:1px;text-decoration:none;border-bottom:1px solid rgba(168,85,247,0.4)">
+          ↗ הרשמה חינמית (250 בקשות/יום)
+        </a>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);font-family:monospace;line-height:1.8;border-right:2px solid rgba(168,85,247,0.3);padding-right:14px">
+      ● ממוצע YoY צמיחה<br>
+      ● 4 רבעונים אחרונים<br>
+      ● מטען ברקע — לא עוצר סריקה
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════ UNIVERSE SELECTOR ══════════════════ -->
 <div class="panel">
   <div class="panel-row">
@@ -694,6 +724,33 @@ body.light .help-sig-row h4 { color: var(--text); }
   </div>
 </div>
 
+<!-- ══════════════════ FMP API KEY PANEL ══════════════════ -->
+<div class="panel" style="border-color:rgba(168,85,247,0.3);background:rgba(168,85,247,0.04)">
+  <div class="panel-row">
+    <div style="font-size:18px">📈</div>
+    <div style="flex:1">
+      <div class="cfg-label" style="color:var(--purple)">קצב צמיחה בהכנסות — Financial Modeling Prep API</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px">
+        <input
+          type="password"
+          id="fmpKeyInput"
+          placeholder="הכנס FMP API Key..."
+          style="font-family:'Share Tech Mono',monospace;font-size:13px;padding:6px 12px;background:var(--panel);border:1px solid rgba(168,85,247,0.4);color:var(--text);outline:none;width:280px;direction:ltr"
+          onkeydown="if(event.key==='Enter') saveFmpKey()"
+        >
+        <button onclick="saveFmpKey()" class="btn btn-primary btn-sm" style="border-color:var(--purple);color:var(--purple)">✓ שמור Key</button>
+        <span id="fmpKeyStatus" style="font-family:'Share Tech Mono',monospace;font-size:11px"></span>
+        <span style="font-size:12px;color:var(--muted)">
+          הרשמה חינמית:
+          <a href="https://financialmodelingprep.com/developer/docs" target="_blank"
+             style="color:var(--purple);text-decoration:none">financialmodelingprep.com ↗</a>
+          · 250 בקשות/יום
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════ CONTROLS ══════════════════ -->
 <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
   <div style="display:flex;align-items:center;gap:8px;border:1px solid var(--border);padding:7px 14px;background:var(--panel)">
@@ -747,6 +804,8 @@ body.light .help-sig-row h4 { color: var(--text); }
   <button class="filter-btn"         onclick="setFilter('near',this)">קרוב לSMA ⚡</button>
   <button class="filter-btn"         onclick="setFilter('cross',this)">חצו 🔔</button>
   <button class="filter-btn buy-btn" onclick="setFilter('buy',this)">🟢 סיגנל קנייה</button>
+  <button class="filter-btn" onclick="setFilter('rev-pos',this)" style="border-color:rgba(168,85,247,0.3);color:var(--purple)">📈 צמיחה חיובית</button>
+  <button class="filter-btn" onclick="setFilter('rev-strong',this)" style="border-color:rgba(168,85,247,0.3);color:var(--purple)">📈 צמיחה &gt;10%</button>
   <input  class="search-box" type="text" id="searchBox" placeholder="חפש סימול..." oninput="renderTable()" dir="ltr">
 </div>
 
@@ -762,12 +821,13 @@ body.light .help-sig-row h4 { color: var(--text); }
         <th onclick="setSortCol('diff')">פער %</th>
         <th>כיוון SMA</th>
         <th onclick="setSortCol('vol')">נפח</th>
+        <th onclick="setSortCol('rev')" style="color:var(--purple)" title="ממוצע צמיחה שנתית בהכנסות — 4 רבעונים אחרונים">צמיחה YoY ↕</th>
         <th>סטטוס</th>
         <th>עדכון</th>
       </tr>
     </thead>
     <tbody id="stockTable">
-      <tr><td colspan="10" class="loading-cell" style="text-align:center;padding:24px">בחר אינדקס ולחץ התחל סריקה</td></tr>
+      <tr><td colspan="11" class="loading-cell" style="text-align:center;padding:24px">בחר אינדקס ולחץ התחל סריקה</td></tr>
     </tbody>
   </table>
 </div>

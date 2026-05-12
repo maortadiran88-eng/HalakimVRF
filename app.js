@@ -3,8 +3,8 @@
 // ─────────────────────────────────────────────
 let scanRunning    = false;
 let countdownTimer = null;
-let prevData       = {};   // { sym: { price, ma } }
-let stockData      = {};   // { sym: { ...all fields } }
+let prevData       = {};
+let stockData      = {};
 let alerts         = [];
 let currentFilter  = 'all';
 let sortCol        = 'sym';
@@ -13,6 +13,8 @@ let currentTimeframe = 'daily';
 let currentUniverse  = null;
 let soundEnabled     = true;
 let isDark           = true;
+let revenueCache     = {};   // { sym: { growth, quarters, fetchedAt } }
+let fmpApiKey        = '';   // Financial Modeling Prep API key
 
 // ─────────────────────────────────────────────
 // UTILS
@@ -37,10 +39,73 @@ function getActiveList() {
   return UNIVERSES[currentUniverse].list();
 }
 
+function getFmpKey() {
+  return document.getElementById('fmpKeyInput')?.value?.trim() || fmpApiKey || '';
+}
+
+function saveFmpKey() {
+  fmpApiKey = getFmpKey();
+  try { localStorage.setItem('sma_fmp_key', fmpApiKey); } catch(e) {}
+  const el = document.getElementById('fmpKeyStatus');
+  if (el) {
+    el.textContent = fmpApiKey ? '✓ API Key נשמר' : '';
+    el.style.color = 'var(--green)';
+    setTimeout(() => { if (el) el.textContent = ''; }, 2500);
+  }
+}
+
+function loadFmpKey() {
+  try {
+    const k = localStorage.getItem('sma_fmp_key') || '';
+    fmpApiKey = k;
+    const inp = document.getElementById('fmpKeyInput');
+    if (inp && k) inp.value = k;
+  } catch(e) {}
+}
+
 // ─────────────────────────────────────────────
-// LOCAL STORAGE
+// FETCH REVENUE GROWTH (FMP)
+// Fetches last 4 quarterly revenue reports
+// Returns array of YoY growth % per quarter
 // ─────────────────────────────────────────────
-const STORAGE_KEY = 'sma_scanner_v3';
+async function fetchRevenueGrowth(sym) {
+  const key = getFmpKey();
+  if (!key) return null;
+
+  // Use cache (valid for 24h)
+  const cached = revenueCache[sym];
+  if (cached && Date.now() - cached.fetchedAt < 86400000) return cached;
+
+  const url = `https://financialmodelingprep.com/api/v3/income-statement/${encodeURIComponent(sym)}?period=quarter&limit=8&apikey=${key}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  if (!res.ok) throw new Error('FMP HTTP ' + res.status);
+  const data = await res.json();
+
+  if (!Array.isArray(data) || data.length < 5) return null;
+
+  // data[0] = most recent quarter, data[4] = same quarter 1 year ago
+  // Calculate YoY growth for last 4 quarters
+  const quarters = [];
+  for (let i = 0; i < 4; i++) {
+    const curr = data[i];
+    const prev = data[i + 4];
+    if (!curr || !prev || !prev.revenue || prev.revenue === 0) continue;
+    const growth = ((curr.revenue - prev.revenue) / Math.abs(prev.revenue)) * 100;
+    quarters.push({
+      date:   curr.date?.substring(0, 7) || '',   // "2024-03"
+      growth: parseFloat(growth.toFixed(1)),
+      rev:    curr.revenue
+    });
+  }
+
+  if (!quarters.length) return null;
+
+  // Average growth over available quarters
+  const avgGrowth = quarters.reduce((s, q) => s + q.growth, 0) / quarters.length;
+  const result = { quarters, avgGrowth: parseFloat(avgGrowth.toFixed(1)), fetchedAt: Date.now() };
+  revenueCache[sym] = result;
+  return result;
+}
 
 function saveSettings() {
   try {
@@ -449,12 +514,14 @@ function renderTable() {
     const near      = Math.abs(diff) <= nearPct;
     const buySignal = d.crossToday && d.maSlope !== 'down' && d.price >= d.ma;
     switch (currentFilter) {
-      case 'above': return d.price >= d.ma;
-      case 'below': return d.price <  d.ma;
-      case 'near':  return near;
-      case 'cross': return d.crossToday;
-      case 'buy':   return buySignal;
-      default:      return true;
+      case 'above':      return d.price >= d.ma;
+      case 'below':      return d.price <  d.ma;
+      case 'near':       return near;
+      case 'cross':      return d.crossToday;
+      case 'buy':        return buySignal;
+      case 'rev-pos':    return d.revenueGrowth != null && d.revenueGrowth > 0;
+      case 'rev-strong': return d.revenueGrowth != null && d.revenueGrowth >= 10;
+      default:           return true;
     }
   });
 
@@ -469,6 +536,7 @@ function renderTable() {
         vb = (b.ma && b.price) ? ((b.price - b.ma) / b.ma * 100) : -9999;
         break;
       case 'vol':    va = a.volRatio  || 0; vb = b.volRatio  || 0; break;
+      case 'rev':    va = a.revenueGrowth != null ? a.revenueGrowth : -9999; vb = b.revenueGrowth != null ? b.revenueGrowth : -9999; break;
       default:       va = a.sym;            vb = b.sym;
     }
     if (typeof va === 'string') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
@@ -492,7 +560,7 @@ function renderTable() {
 
   const tbody = document.getElementById('stockTable');
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="10" class="loading-cell" style="text-align:center;padding:28px">
+    tbody.innerHTML = `<tr><td colspan="11" class="loading-cell" style="text-align:center;padding:28px">
       ${Object.keys(stockData).length === 0 ? 'בחר אינדקס ולחץ התחל סריקה' : 'אין תוצאות'}
     </td></tr>`;
     return;
@@ -500,7 +568,26 @@ function renderTable() {
 
   tbody.innerHTML = rows.map(d => {
     const changeCls = (d.changePct || 0) >= 0 ? 'up' : 'dn';
-    let maCell = '—', diffCell = '—', slopeCell = '—', volCell = '—', statusCell = '—';
+    let maCell = '—', diffCell = '—', slopeCell = '—', volCell = '—', revCell = '—', statusCell = '—';
+
+    // Revenue growth cell
+    if (d.revenueGrowth != null) {
+      const g    = d.revenueGrowth;
+      const clr  = g >= 10 ? 'var(--green)' : g >= 0 ? 'var(--blue)' : 'var(--red)';
+      const sign = g >= 0 ? '+' : '';
+      const qs   = d.revenueQuarters || [];
+      const tip  = qs.map(q => `${q.date}: ${q.growth >= 0 ? '+' : ''}${q.growth}%`).join(' | ');
+      revCell = `<span style="color:${clr};font-weight:700" title="${tip}">${sign}${g.toFixed(1)}%</span>
+        <div style="display:flex;gap:2px;margin-top:2px">${qs.slice(0,4).map(q => {
+          const qclr = q.growth >= 10 ? 'var(--green)' : q.growth >= 0 ? 'var(--blue)' : 'var(--red)';
+          const h    = Math.min(Math.abs(q.growth) / 30 * 10, 10);
+          return `<div style="width:5px;height:${Math.max(h,2)}px;background:${qclr};border-radius:1px" title="${q.date}: ${q.growth}%"></div>`;
+        }).join('')}</div>`;
+    } else if (d.revLoading) {
+      revCell = `<span style="color:var(--muted);font-size:10px">טוען...</span>`;
+    } else if (!getFmpKey()) {
+      revCell = `<span style="color:var(--muted);font-size:9px;letter-spacing:0">הכנס Key</span>`;
+    }
 
     if (d.ma) {
       const diff    = ((d.price - d.ma) / d.ma) * 100;
@@ -557,6 +644,7 @@ function renderTable() {
         <td>${diffCell}</td>
         <td>${slopeCell}</td>
         <td>${volCell}</td>
+        <td>${revCell}</td>
         <td>${statusCell}</td>
         <td style="color:var(--muted);font-size:10px">${d.updatedAt || '—'}</td>
       </tr>`;
@@ -567,7 +655,7 @@ function renderTable() {
       <td class="name-cell">${d.name}</td>
       <td>${fmtPrice(d.price)}</td>
       <td class="${changeCls}">${fmtPct(d.changePct)}</td>
-      <td colspan="6" class="loading-cell">טוען...</td>
+      <td colspan="7" class="loading-cell">טוען...</td>
     </tr>`;
   }).join('');
 }
@@ -625,8 +713,25 @@ async function runScan() {
         crossToday:      !!crossType || stockData[sym]?.crossToday,
         candlesAgo:      crossType ? candlesAgo : (stockData[sym]?.candlesAgo || 0),
         buySignalActive: buySignal,
+        revenueGrowth:   stockData[sym]?.revenueGrowth ?? null,
+        revenueQuarters: stockData[sym]?.revenueQuarters ?? null,
+        revLoading:      getFmpKey() && stockData[sym]?.revenueGrowth == null,
         updatedAt:       fmtTime()
       };
+
+      // Fetch revenue in background (non-blocking) if FMP key is set
+      if (getFmpKey() && stockData[sym].revenueGrowth == null) {
+        fetchRevenueGrowth(sym).then(rev => {
+          if (rev && stockData[sym]) {
+            stockData[sym].revenueGrowth   = rev.avgGrowth;
+            stockData[sym].revenueQuarters = rev.quarters;
+            stockData[sym].revLoading      = false;
+            renderTable();
+          }
+        }).catch(() => {
+          if (stockData[sym]) { stockData[sym].revLoading = false; }
+        });
+      }
     } catch(e) {
       if (!stockData[sym]) {
         stockData[sym] = { sym, name, price: null, changePct: null, ma: null,
@@ -726,6 +831,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp();
 (function init() {
   updateConfigDisplay();
   updateSoundBtn();
+  loadFmpKey();
   renderAlerts();
   renderTable();
   const saved = loadSettings();
